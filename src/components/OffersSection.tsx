@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface PropertyCardProps {
   title: string;
@@ -12,9 +13,14 @@ interface PropertyCardProps {
 
 const PropertyCard: React.FC<PropertyCardProps> = ({ title, location, price, id }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
   
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/property/${id}`);
   };
 
   return (
@@ -33,7 +39,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ title, location, price, id 
             <span className="font-bold">${price}</span>
           </p>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={handleViewDetails}
+            >
               More Details
             </Button>
             <button 
