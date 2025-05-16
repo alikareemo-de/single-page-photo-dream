@@ -8,7 +8,7 @@ const Navigation: React.FC = () => {
   return (
     <nav className="w-full bg-white py-4 px-6 flex items-center justify-between shadow-sm">
       <div className="flex items-center space-x-8">
-        <div className="font-bold text-xl">Logo</div>
+        <div className="font-bold text-xl italic text-gray-800">Fantasia Tourism</div>
         <div className="hidden md:flex items-center space-x-6">
           <a href="#" className="text-gray-800 hover:text-gray-600">Home</a>
           <a href="#" className="text-gray-800 hover:text-gray-600">About Us</a>
@@ -23,12 +23,12 @@ const Navigation: React.FC = () => {
           <input 
             type="text" 
             placeholder="Search properties..." 
-            className="pl-10 pr-4 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="pl-10 pr-4 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#6b7d65]"
           />
         </div>
         <div className="hidden md:flex items-center space-x-2">
           <Select>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-[120px] bg-gray-100">
               <SelectValue placeholder="Country" />
             </SelectTrigger>
             <SelectContent>
@@ -39,7 +39,7 @@ const Navigation: React.FC = () => {
           </Select>
           
           <Select>
-            <SelectTrigger className="w-[100px]">
+            <SelectTrigger className="w-[100px] bg-gray-100">
               <SelectValue placeholder="City" />
             </SelectTrigger>
             <SelectContent>
@@ -50,7 +50,7 @@ const Navigation: React.FC = () => {
           </Select>
           
           <Select>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-[120px] bg-gray-100">
               <SelectValue placeholder="Prop Type" />
             </SelectTrigger>
             <SelectContent>
