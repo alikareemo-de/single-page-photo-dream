@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import SearchFilters from '@/components/SearchFilters';
 import { ArrowLeft, Heart, MapPin } from "lucide-react";
 
 interface PropertyDetailData {
@@ -217,6 +218,8 @@ const PropertyDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <SearchFilters />
       
       <Footer />
     </div>
