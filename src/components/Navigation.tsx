@@ -1,16 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import RegisterModal from './RegisterModal';
 
 const Navigation: React.FC = () => {
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
   return (
     <nav className="w-full bg-white py-4 px-6 flex items-center justify-between shadow-sm">
       <div className="flex items-center space-x-8">
         <div className="font-bold text-xl italic text-gray-800">Fantasia Tourism</div>
         <div className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-gray-800 hover:text-gray-600">Home</a>
+          <Link to="/" className="text-gray-800 hover:text-gray-600">Home</Link>
           <a href="#" className="text-gray-800 hover:text-gray-600">About Us</a>
         </div>
       </div>
@@ -63,12 +67,23 @@ const Navigation: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-2">
-        <Button variant="outline" className="bg-gray-200 hover:bg-gray-300">Sign Up</Button>
+        <Button 
+          variant="outline" 
+          className="bg-gray-200 hover:bg-gray-300"
+          onClick={() => setShowRegisterModal(true)}
+        >
+          Sign Up
+        </Button>
         <Button variant="outline" className="bg-gray-300 hover:bg-gray-400">Sign In</Button>
         <div className="rounded-full bg-gray-200 w-8 h-8 flex items-center justify-center">
           <span className="text-gray-600">👤</span>
         </div>
       </div>
+      
+      <RegisterModal 
+        isOpen={showRegisterModal} 
+        onClose={() => setShowRegisterModal(false)} 
+      />
     </nav>
   );
 };
