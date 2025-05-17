@@ -77,7 +77,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] max-w-[95%] p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[400px] max-w-[95%] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-[#5A7556]">Create an Account</DialogTitle>
         </DialogHeader>
@@ -98,6 +98,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                   </FormItem>
                 )}
               />
+              
               <FormField
                 control={form.control}
                 name="lastName"
@@ -113,33 +114,35 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="johndoe123" {...field} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="cellPhoneNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Cell Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+1 (555) 123-4567" {...field} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="johndoe123" {...field} className="h-9" />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="cellPhoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Cell Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="+1 (555) 123-4567" {...field} className="h-9" />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
@@ -155,33 +158,35 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm">Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} className="h-9" />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} className="h-9" />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Confirm</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} className="h-9" />
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <DialogFooter className="pt-4 gap-2 sm:gap-0">
               <Button type="button" variant="outline" onClick={onClose} className="h-8 text-sm">

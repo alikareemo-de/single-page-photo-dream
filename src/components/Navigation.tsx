@@ -3,9 +3,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, UserRound, Settings, HomeIcon } from "lucide-react";
 import RegisterModal from './RegisterModal';
 import SignInModal from './SignInModal';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navigation: React.FC = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -83,9 +89,39 @@ const Navigation: React.FC = () => {
         >
           Sign In
         </Button>
-        <div className="rounded-full bg-gray-200 w-8 h-8 flex items-center justify-center">
-          <span className="text-gray-600">👤</span>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="rounded-full bg-gray-200 w-8 h-8 flex items-center justify-center cursor-pointer hover:bg-gray-300">
+              <UserRound size={18} className="text-gray-600" />
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-white shadow-md">
+            <div className="flex items-center p-3 border-b">
+              <div className="rounded-full bg-gray-200 w-10 h-10 flex items-center justify-center mr-3">
+                <UserRound size={20} className="text-gray-600" />
+              </div>
+              <div>
+                <p className="font-medium">User name</p>
+                <p className="text-sm text-gray-500">user@example.com</p>
+              </div>
+            </div>
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="cursor-pointer">My Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/properties" className="cursor-pointer">Properties</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/dashboard" className="cursor-pointer">Dashboard</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="cursor-pointer">Settings</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-red-500 cursor-pointer">
+              Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       
       <RegisterModal 
