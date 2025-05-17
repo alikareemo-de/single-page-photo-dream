@@ -63,9 +63,18 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom colors
+				// Tourism-themed colors
 				'app-gray': '#e5e5e5',
 				'app-dark-gray': '#666666',
+				'tourism-blue': '#3498db',
+				'tourism-light-blue': '#e0f7fa',
+				'tourism-teal': '#3CAEA3',
+				'tourism-green': '#8CC152',
+				'tourism-sand': '#F6D8AE',
+				'tourism-coral': '#F67E7D',
+				'tourism-ocean': '#20639B',
+				'tourism-sunset': '#ED553B',
+				'tourism-sky': '#3BCEAC',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
