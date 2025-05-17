@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import RegisterModal from './RegisterModal';
+import SignInModal from './SignInModal';
 
 const Navigation: React.FC = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
 
   return (
     <nav className="w-full bg-white py-4 px-6 flex items-center justify-between shadow-sm">
@@ -69,12 +71,18 @@ const Navigation: React.FC = () => {
       <div className="flex items-center space-x-2">
         <Button 
           variant="outline" 
-          className="bg-gray-200 hover:bg-gray-300"
+          className="bg-gray-200 hover:bg-gray-300 text-sm h-9"
           onClick={() => setShowRegisterModal(true)}
         >
           Sign Up
         </Button>
-        <Button variant="outline" className="bg-gray-300 hover:bg-gray-400">Sign In</Button>
+        <Button 
+          variant="outline" 
+          className="bg-gray-300 hover:bg-gray-400 text-sm h-9"
+          onClick={() => setShowSignInModal(true)}
+        >
+          Sign In
+        </Button>
         <div className="rounded-full bg-gray-200 w-8 h-8 flex items-center justify-center">
           <span className="text-gray-600">👤</span>
         </div>
@@ -83,6 +91,11 @@ const Navigation: React.FC = () => {
       <RegisterModal 
         isOpen={showRegisterModal} 
         onClose={() => setShowRegisterModal(false)} 
+      />
+      
+      <SignInModal
+        isOpen={showSignInModal} 
+        onClose={() => setShowSignInModal(false)}
       />
     </nav>
   );

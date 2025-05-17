@@ -45,6 +45,8 @@ const formSchema = z.object({
   }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
+  }).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
+    message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
   }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -75,24 +77,24 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px] max-w-[95%] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#5A7556]">Create an Account</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-[#5A7556]">Create an Account</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 pt-2">
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>First Name</FormLabel>
+                    <FormLabel className="text-sm">First Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="John" {...field} />
+                      <Input placeholder="John" {...field} className="h-9" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -101,11 +103,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel className="text-sm">Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Doe" {...field} />
+                      <Input placeholder="Doe" {...field} className="h-9" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs" />
                   </FormItem>
                 )}
               />
@@ -116,11 +118,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel className="text-sm">Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="johndoe123" {...field} />
+                    <Input placeholder="johndoe123" {...field} className="h-9" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -130,11 +132,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               name="cellPhoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cell Phone Number</FormLabel>
+                  <FormLabel className="text-sm">Cell Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 (555) 123-4567" {...field} />
+                    <Input placeholder="+1 (555) 123-4567" {...field} className="h-9" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -144,11 +146,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-sm">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="johndoe@example.com" {...field} />
+                    <Input type="email" placeholder="johndoe@example.com" {...field} className="h-9" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -158,11 +160,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-sm">Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" {...field} className="h-9" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -172,22 +174,22 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel className="text-sm">Confirm Password</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" {...field} className="h-9" />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
             
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={onClose} className="h-8 text-sm">
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                className="bg-[#6b7d65] hover:bg-[#5A7556] text-white"
+                className="bg-[#6b7d65] hover:bg-[#5A7556] text-white h-8 text-sm"
               >
                 Register
               </Button>
