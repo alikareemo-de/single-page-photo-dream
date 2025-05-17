@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 196 64% 38%;
+    --primary: 200 75% 36%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 174 49% 47%;
@@ -124,5 +124,36 @@
   
   .text-shadow {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .input-tourism {
+    @apply border-tourism-teal/30 focus:border-tourism-teal focus:ring-tourism-teal/20;
+  }
+  
+  .btn-tourism-primary {
+    @apply bg-tourism-ocean hover:bg-tourism-teal text-white transition-colors;
+  }
+  
+  .btn-tourism-secondary {
+    @apply bg-tourism-teal hover:bg-tourism-ocean text-white transition-colors;
+  }
+  
+  .btn-tourism-accent {
+    @apply bg-tourism-sand hover:bg-tourism-coral text-tourism-ocean transition-colors;
+  }
+}
+
+/* Tourism theme components */
+@layer components {
+  .auth-form {
+    @apply bg-white p-5 rounded-lg shadow-md border border-tourism-light-blue;
+  }
+  
+  .tourism-badge {
+    @apply inline-flex items-center rounded-full bg-tourism-light-blue px-2.5 py-0.5 text-xs font-semibold text-tourism-ocean transition-colors;
+  }
+  
+  .tourism-tag {
+    @apply inline-flex items-center rounded-md bg-tourism-light-blue/50 px-2 py-1 text-xs font-medium text-tourism-ocean ring-1 ring-inset ring-tourism-light-blue/80;
   }
 }

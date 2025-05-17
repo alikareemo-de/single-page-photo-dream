@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -21,6 +21,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { registerUser } from "@/services/auth";
+import { useUser } from "@/contexts/UserContext";
+import { Loader2 } from "lucide-react";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -55,6 +58,9 @@ const formSchema = z.object({
 });
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { setUser } = useUser();
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,18 +74,39 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast.success("Registration successful!");
-    onClose();
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    
+    try {
+      const user = await registerUser({
+        username: values.username,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        cellPhoneNumber: values.cellPhoneNumber,
+      });
+      
+      setUser(user);
+      toast.success(`Welcome aboard, ${user.firstName}! Your account has been created.`);
+      onClose();
+      form.reset();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Registration failed. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px] max-w-[95%] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-[#5A7556]">Create an Account</DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-tourism-ocean">Create an Account</DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -194,8 +221,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               </Button>
               <Button 
                 type="submit" 
-                className="bg-[#6b7d65] hover:bg-[#5A7556] text-white h-8 text-sm"
+                disabled={isSubmitting}
+                className="bg-tourism-ocean hover:bg-tourism-ocean/90 text-white h-8 text-sm"
               >
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Register
               </Button>
             </DialogFooter>
