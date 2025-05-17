@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,6 +27,7 @@ import { Loader2 } from "lucide-react";
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
+  openSignInModal?: () => void;
 }
 
 const formSchema = z.object({
@@ -57,7 +57,7 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
-const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, openSignInModal }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser } = useUser();
   
@@ -215,7 +215,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
               />
             </div>
             
-            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+            <DialogFooter className="pt-4 gap-2 sm:gap-0 flex-col sm:flex-row">
               <Button type="button" variant="outline" onClick={onClose} className="h-8 text-sm">
                 Cancel
               </Button>
@@ -230,6 +230,21 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
             </DialogFooter>
           </form>
         </Form>
+
+        <div className="text-center mt-4 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600">Already have an account?</p>
+          <Button 
+            type="button"
+            variant="link"
+            onClick={() => {
+              onClose();
+              if (openSignInModal) openSignInModal();
+            }}
+            className="text-tourism-teal hover:text-tourism-ocean p-0 h-auto mt-1"
+          >
+            Sign in here
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
