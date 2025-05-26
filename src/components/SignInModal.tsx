@@ -28,7 +28,6 @@ import { Loader2 } from "lucide-react";
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
-  openRegisterModal?: () => void;
 }
 
 const formSchema = z.object({
@@ -40,7 +39,7 @@ const formSchema = z.object({
   }),
 });
 
-const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, openRegisterModal }) => {
+const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser } = useUser();
   
@@ -113,7 +112,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, openRegister
               )}
             />
             
-            <DialogFooter className="pt-4 gap-2 sm:gap-0 flex-col sm:flex-row">
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
               <Button type="button" variant="outline" onClick={onClose} className="h-8 text-sm">
                 Cancel
               </Button>
@@ -128,21 +127,6 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose, openRegister
             </DialogFooter>
           </form>
         </Form>
-
-        <div className="text-center mt-4 pt-4 border-t border-gray-200">
-          <p className="text-sm text-gray-600">Don't have an account?</p>
-          <Button 
-            type="button"
-            variant="link"
-            onClick={() => {
-              onClose();
-              if (openRegisterModal) openRegisterModal();
-            }}
-            className="text-tourism-teal hover:text-tourism-ocean p-0 h-auto mt-1"
-          >
-            Create an account
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

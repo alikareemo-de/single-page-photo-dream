@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from "@/contexts/UserContext";
-import { User, LogIn, LogOut, UserCircle, Settings, Building, LayoutDashboard } from "lucide-react";
+import { User, LogIn, LogOut, UserCircle, Settings, Home, Building, LayoutDashboard } from "lucide-react";
 import SignInModal from '@/components/SignInModal';
 import RegisterModal from '@/components/RegisterModal';
 import { toast } from 'sonner';
@@ -25,16 +25,6 @@ const AuthNav: React.FC = () => {
   const handleSignOut = () => {
     signOut();
     toast.success("You've been signed out successfully");
-  };
-
-  const openSignInModal = () => {
-    setIsRegisterModalOpen(false);
-    setIsSignInModalOpen(true);
-  };
-
-  const openRegisterModal = () => {
-    setIsSignInModalOpen(false);
-    setIsRegisterModalOpen(true);
   };
 
   if (isLoading) {
@@ -103,7 +93,7 @@ const AuthNav: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => openSignInModal()} 
+            onClick={() => setIsSignInModalOpen(true)} 
             className="h-9 px-3 border-tourism-teal text-tourism-ocean hover:bg-tourism-light-blue"
           >
             <LogIn className="mr-2 h-4 w-4" />
@@ -112,7 +102,7 @@ const AuthNav: React.FC = () => {
           <Button 
             variant="default" 
             size="sm" 
-            onClick={() => openRegisterModal()} 
+            onClick={() => setIsRegisterModalOpen(true)} 
             className="h-9 px-3 bg-tourism-ocean hover:bg-tourism-teal text-white"
           >
             <User className="mr-2 h-4 w-4" />
@@ -121,16 +111,14 @@ const AuthNav: React.FC = () => {
         </div>
       )}
 
-      {/* Modals with cross-referencing */}
+      {/* Modals */}
       <SignInModal 
         isOpen={isSignInModalOpen} 
-        onClose={() => setIsSignInModalOpen(false)}
-        openRegisterModal={openRegisterModal}
+        onClose={() => setIsSignInModalOpen(false)} 
       />
       <RegisterModal 
         isOpen={isRegisterModalOpen} 
-        onClose={() => setIsRegisterModalOpen(false)}
-        openSignInModal={openSignInModal}
+        onClose={() => setIsRegisterModalOpen(false)} 
       />
     </>
   );
