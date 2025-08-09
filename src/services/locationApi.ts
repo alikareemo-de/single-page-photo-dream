@@ -39,32 +39,99 @@ export const fetchCountries = async (): Promise<Country[]> => {
   }
 };
 
-// Using GeoDB Cities API - free tier available (no API key for basic usage)
+// Using World Cities API - free, no API key required
 export const fetchCitiesByCountry = async (countryCode: string): Promise<string[]> => {
   try {
-    // Using a free API that doesn't require authentication for basic requests
+    // Using a free API that works without authentication
     const response = await fetch(
-      `https://api.api-ninjas.com/v1/city?country=${countryCode}&limit=50`,
+      `https://countriesnow.space/api/v0.1/countries/cities`,
       {
+        method: 'POST',
         headers: {
-          'X-Api-Key': 'demo' // Using demo key for basic functionality
-        }
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          country: getCountryNameByCode(countryCode)
+        })
       }
     );
     
     if (!response.ok) {
-      // If API fails, return some default cities based on country
       return getDefaultCities(countryCode);
     }
     
     const data = await response.json();
-    const cities = data.map((city: any) => city.name);
+    if (data.error || !data.data) {
+      return getDefaultCities(countryCode);
+    }
     
-    return cities.sort();
+    return data.data.sort();
   } catch (error) {
     console.error('Error fetching cities:', error);
     return getDefaultCities(countryCode);
   }
+};
+
+// Helper function to get country name from code for the cities API
+const getCountryNameByCode = (countryCode: string): string => {
+  const countryMap: { [key: string]: string } = {
+    'US': 'United States',
+    'CA': 'Canada', 
+    'GB': 'United Kingdom',
+    'DE': 'Germany',
+    'FR': 'France',
+    'IT': 'Italy',
+    'ES': 'Spain',
+    'AU': 'Australia',
+    'JP': 'Japan',
+    'MX': 'Mexico',
+    'BR': 'Brazil',
+    'IN': 'India',
+    'CN': 'China',
+    'RU': 'Russia',
+    'RS': 'Serbia',
+    'NL': 'Netherlands',
+    'BE': 'Belgium',
+    'CH': 'Switzerland',
+    'AT': 'Austria',
+    'SE': 'Sweden',
+    'NO': 'Norway',
+    'DK': 'Denmark',
+    'FI': 'Finland',
+    'PL': 'Poland',
+    'CZ': 'Czech Republic',
+    'HU': 'Hungary',
+    'GR': 'Greece',
+    'PT': 'Portugal',
+    'IE': 'Ireland',
+    'TR': 'Turkey',
+    'EG': 'Egypt',
+    'ZA': 'South Africa',
+    'NG': 'Nigeria',
+    'KE': 'Kenya',
+    'MA': 'Morocco',
+    'AR': 'Argentina',
+    'CL': 'Chile',
+    'CO': 'Colombia',
+    'PE': 'Peru',
+    'VE': 'Venezuela',
+    'TH': 'Thailand',
+    'VN': 'Vietnam',
+    'PH': 'Philippines',
+    'ID': 'Indonesia',
+    'MY': 'Malaysia',
+    'SG': 'Singapore',
+    'KR': 'South Korea',
+    'BD': 'Bangladesh',
+    'PK': 'Pakistan',
+    'LK': 'Sri Lanka',
+    'NP': 'Nepal',
+    'MM': 'Myanmar',
+    'KH': 'Cambodia',
+    'LA': 'Laos'
+  };
+  
+  return countryMap[countryCode] || countryCode;
 };
 
 // Fallback function with some major cities for common countries
