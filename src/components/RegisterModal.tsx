@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,7 +31,7 @@ import { toast } from "sonner";
 import { registerUser } from "@/services/auth";
 import { useUser } from "@/contexts/UserContext";
 import { Loader2 } from "lucide-react";
-import { getCountries, getCitiesByCountry } from "@/data/countries";
+import { fetchCountries, fetchCitiesByCountry, Country } from "@/services/locationApi";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -81,10 +81,53 @@ const formSchema = z.object({
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToSignIn }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
   const { setUser } = useUser();
-  
-  const countries = getCountries();
-  const cities = getCitiesByCountry(selectedCountry);
+
+  // Fetch countries on component mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        const countriesData = await fetchCountries();
+        setCountries(countriesData);
+      } catch (error) {
+        toast.error("Failed to load countries");
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    if (isOpen) {
+      loadCountries();
+    }
+  }, [isOpen]);
+
+  // Fetch cities when country changes
+  useEffect(() => {
+    const loadCities = async () => {
+      if (!selectedCountry) {
+        setCities([]);
+        return;
+      }
+
+      setLoadingCities(true);
+      try {
+        const citiesData = await fetchCitiesByCountry(selectedCountry);
+        setCities(citiesData);
+      } catch (error) {
+        toast.error("Failed to load cities");
+        setCities([]);
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+
+    loadCities();
+  }, [selectedCountry]);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -246,10 +289,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
                         form.setValue("city", ""); // Reset city when country changes
                       }} 
                       defaultValue={field.value}
+                      disabled={loadingCountries}
                     >
                       <FormControl>
                         <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select country" />
+                          <SelectValue placeholder={loadingCountries ? "Loading countries..." : "Select country"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -271,10 +315,20 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm">City</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCountry}>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value} 
+                      disabled={!selectedCountry || loadingCities}
+                    >
                       <FormControl>
                         <SelectTrigger className="h-9">
-                          <SelectValue placeholder="Select city" />
+                          <SelectValue placeholder={
+                            loadingCities 
+                              ? "Loading cities..." 
+                              : !selectedCountry 
+                                ? "Select country first" 
+                                : "Select city"
+                          } />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
