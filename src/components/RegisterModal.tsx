@@ -28,6 +28,7 @@ import { Loader2 } from "lucide-react";
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSwitchToSignIn?: () => void;
 }
 
 const formSchema = z.object({
@@ -57,7 +58,7 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
-const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
+const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToSignIn }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { setUser } = useUser();
   
@@ -228,6 +229,22 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose }) => {
                 Register
               </Button>
             </DialogFooter>
+            
+            {onSwitchToSignIn && (
+              <div className="text-center pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Already have an account?{' '}
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    className="text-tourism-ocean hover:text-tourism-teal p-0 h-auto font-medium"
+                    onClick={onSwitchToSignIn}
+                  >
+                    Sign In
+                  </Button>
+                </p>
+              </div>
+            )}
           </form>
         </Form>
       </DialogContent>

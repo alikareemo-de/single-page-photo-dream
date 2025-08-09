@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, UserRound, Settings, HomeIcon, Compass, Map } from "lucide-react";
 import RegisterModal from './RegisterModal';
 import SignInModal from './SignInModal';
+import { useUser } from "@/contexts/UserContext";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Navigation: React.FC = () => {
+  const { user, signOut } = useUser();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
 
@@ -84,63 +86,76 @@ const Navigation: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-2">
-        <Button 
-          variant="outline" 
-          className="bg-tourism-light-blue hover:bg-tourism-teal hover:text-white text-sm h-9 rounded-full border-tourism-teal text-tourism-ocean"
-          onClick={() => setShowRegisterModal(true)}
-        >
-          Sign Up
-        </Button>
-        <Button 
-          variant="outline" 
-          className="bg-tourism-teal hover:bg-tourism-ocean text-white text-sm h-9 rounded-full"
-          onClick={() => setShowSignInModal(true)}
-        >
-          Sign In
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="rounded-full bg-tourism-light-blue w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-tourism-teal hover:text-white transition-colors">
-              <UserRound size={18} className="text-tourism-ocean" />
-            </div>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 bg-white shadow-md rounded-xl border border-tourism-light-blue/50">
-            <div className="flex items-center p-3 border-b border-tourism-light-blue/50">
-              <div className="rounded-full bg-tourism-light-blue w-10 h-10 flex items-center justify-center mr-3">
-                <UserRound size={20} className="text-tourism-ocean" />
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="rounded-full bg-tourism-light-blue w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-tourism-teal hover:text-white transition-colors">
+                <UserRound size={18} className="text-tourism-ocean" />
               </div>
-              <div>
-                <p className="font-medium text-tourism-ocean">User name</p>
-                <p className="text-sm text-gray-500">user@example.com</p>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-white shadow-md rounded-xl border border-tourism-light-blue/50">
+              <div className="flex items-center p-3 border-b border-tourism-light-blue/50">
+                <div className="rounded-full bg-tourism-light-blue w-10 h-10 flex items-center justify-center mr-3">
+                  <UserRound size={20} className="text-tourism-ocean" />
+                </div>
+                <div>
+                  <p className="font-medium text-tourism-ocean">{user.firstName} {user.lastName}</p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                </div>
               </div>
-            </div>
-            <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
-              <Link to="/profile" className="cursor-pointer">My Profile</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
-              <Link to="/properties" className="cursor-pointer">Properties</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
-              <Link to="/dashboard" className="cursor-pointer">Dashboard</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
-              <Link to="/settings" className="cursor-pointer">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-tourism-coral cursor-pointer hover:bg-tourism-light-blue/30">
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/profile" className="cursor-pointer">My Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/properties" className="cursor-pointer">Properties</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/dashboard" className="cursor-pointer">Dashboard</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/settings" className="cursor-pointer">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-tourism-coral cursor-pointer hover:bg-tourism-light-blue/30" onClick={signOut}>
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              className="bg-tourism-light-blue hover:bg-tourism-teal hover:text-white text-sm h-9 rounded-full border-tourism-teal text-tourism-ocean"
+              onClick={() => setShowRegisterModal(true)}
+            >
+              Sign Up
+            </Button>
+            <Button 
+              variant="outline" 
+              className="bg-tourism-teal hover:bg-tourism-ocean text-white text-sm h-9 rounded-full"
+              onClick={() => setShowSignInModal(true)}
+            >
+              Sign In
+            </Button>
+          </>
+        )}
       </div>
       
       <RegisterModal 
         isOpen={showRegisterModal} 
         onClose={() => setShowRegisterModal(false)} 
+        onSwitchToSignIn={() => {
+          setShowRegisterModal(false);
+          setShowSignInModal(true);
+        }}
       />
       
       <SignInModal
         isOpen={showSignInModal} 
         onClose={() => setShowSignInModal(false)}
+        onSwitchToRegister={() => {
+          setShowSignInModal(false);
+          setShowRegisterModal(true);
+        }}
       />
     </nav>
   );
