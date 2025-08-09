@@ -9,6 +9,10 @@ interface User {
   lastName: string;
   email: string;
   cellPhoneNumber?: string;
+  dateOfBirth?: string;
+  country?: string;
+  city?: string;
+  address?: string;
 }
 
 interface UserContextType {

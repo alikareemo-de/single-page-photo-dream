@@ -20,10 +20,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { registerUser } from "@/services/auth";
 import { useUser } from "@/contexts/UserContext";
 import { Loader2 } from "lucide-react";
+import { getCountries, getCitiesByCountry } from "@/data/countries";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -47,6 +55,18 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  dateOfBirth: z.string().min(1, {
+    message: "Date of birth is required.",
+  }),
+  country: z.string().min(1, {
+    message: "Please select a country.",
+  }),
+  city: z.string().min(1, {
+    message: "Please select a city.",
+  }),
+  address: z.string().min(5, {
+    message: "Address must be at least 5 characters.",
+  }),
   password: z.string().min(8, {
     message: "Password must be at least 8 characters.",
   }).regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, {
@@ -60,7 +80,11 @@ const formSchema = z.object({
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitchToSignIn }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
   const { setUser } = useUser();
+  
+  const countries = getCountries();
+  const cities = getCitiesByCountry(selectedCountry);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,6 +94,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
       lastName: "",
       cellPhoneNumber: "",
       email: "",
+      dateOfBirth: "",
+      country: "",
+      city: "",
+      address: "",
       password: "",
       confirmPassword: "",
     },
@@ -86,6 +114,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
         email: values.email,
         password: values.password,
         cellPhoneNumber: values.cellPhoneNumber,
+        dateOfBirth: values.dateOfBirth,
+        country: values.country,
+        city: values.city,
+        address: values.address,
       });
       
       setUser(user);
@@ -105,7 +137,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] max-w-[95%] p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[500px] max-w-[95%] p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-tourism-ocean">Create an Account</DialogTitle>
         </DialogHeader>
@@ -180,6 +212,93 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ isOpen, onClose, onSwitch
                   <FormLabel className="text-sm">Email</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="johndoe@example.com" {...field} className="h-9" />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="dateOfBirth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Date of Birth</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} className="h-9" />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Country</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedCountry(value);
+                        form.setValue("city", ""); // Reset city when country changes
+                      }} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">City</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!selectedCountry}>
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {cities.map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm">Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Main St, Apt 1" {...field} className="h-9" />
                   </FormControl>
                   <FormMessage className="text-xs" />
                 </FormItem>

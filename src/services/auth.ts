@@ -6,6 +6,10 @@ interface User {
   lastName: string;
   email: string;
   cellPhoneNumber?: string;
+  dateOfBirth?: string;
+  country?: string;
+  city?: string;
+  address?: string;
 }
 
 interface RegisterData {
@@ -15,6 +19,10 @@ interface RegisterData {
   email: string;
   password: string;
   cellPhoneNumber?: string;
+  dateOfBirth?: string;
+  country?: string;
+  city?: string;
+  address?: string;
 }
 
 interface SignInData {
@@ -67,7 +75,11 @@ export const registerUser = async (data: RegisterData): Promise<User> => {
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
-    cellPhoneNumber: data.cellPhoneNumber
+    cellPhoneNumber: data.cellPhoneNumber,
+    dateOfBirth: data.dateOfBirth,
+    country: data.country,
+    city: data.city,
+    address: data.address
   };
 
   // Add to mock database
