@@ -171,7 +171,7 @@ const AddProperty: React.FC = () => {
             {/* Type */}
             <div className="space-y-2">
               <Label htmlFor="type">Property Type *</Label>
-              <Select onValueChange={(value) => setValue('type', value)}>
+              <Select onValueChange={(value) => setValue('type', value, { shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select property type" />
                 </SelectTrigger>
@@ -184,6 +184,7 @@ const AddProperty: React.FC = () => {
                   <SelectItem value="hostel">Hostel</SelectItem>
                 </SelectContent>
               </Select>
+              <input type="hidden" {...register('type', { required: 'Property type is required' })} />
               {errors.type && <p className="text-sm text-destructive">Property type is required</p>}
             </div>
 
@@ -251,7 +252,7 @@ const AddProperty: React.FC = () => {
             {/* Status */}
             <div className="space-y-2">
               <Label htmlFor="status">Status *</Label>
-              <Select onValueChange={(value) => setValue('status', value)}>
+              <Select onValueChange={(value) => setValue('status', value, { shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select availability status" />
                 </SelectTrigger>
@@ -261,6 +262,7 @@ const AddProperty: React.FC = () => {
                   <SelectItem value="maintenance">Under Maintenance</SelectItem>
                 </SelectContent>
               </Select>
+              <input type="hidden" {...register('status', { required: 'Status is required' })} />
               {errors.status && <p className="text-sm text-destructive">Status is required</p>}
             </div>
 
