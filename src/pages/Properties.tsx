@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Map, Star, Calendar } from 'lucide-react';
+import { Heart, Map, Star, Calendar, Plus } from 'lucide-react';
+import AddProperty from '@/components/AddProperty';
 
 interface PropertyItemProps {
   title: string;
@@ -94,11 +95,28 @@ const PropertyItem: React.FC<PropertyItemProps> = ({
 };
 
 const Properties = () => {
+  const [showAddProperty, setShowAddProperty] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold gradient-heading mb-8">My Properties</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold gradient-heading">My Properties</h1>
+          <Button 
+            onClick={() => setShowAddProperty(!showAddProperty)}
+            className="tourism-btn flex items-center gap-2"
+          >
+            <Plus size={20} />
+            {showAddProperty ? 'Cancel' : 'Add Property'}
+          </Button>
+        </div>
+
+        {showAddProperty && (
+          <div className="mb-8">
+            <AddProperty />
+          </div>
+        )}
         
         <Tabs defaultValue="upcoming" className="mb-6">
           <TabsList className="bg-tourism-light-blue/30 p-1">
