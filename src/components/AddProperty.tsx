@@ -29,6 +29,7 @@ interface PropertyFormData {
 
 interface ImageFile extends File {
   preview: string;
+  originalName: string;
 }
 
 const AddProperty: React.FC = () => {
@@ -51,7 +52,8 @@ const AddProperty: React.FC = () => {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newImages = acceptedFiles.map(file => Object.assign(file, {
-      preview: URL.createObjectURL(file)
+      preview: URL.createObjectURL(file),
+      originalName: file.name
     })) as ImageFile[];
     
     setImages(prev => [...prev, ...newImages]);
@@ -76,7 +78,8 @@ const AddProperty: React.FC = () => {
 
   const replaceImage = (index: number, newFile: File) => {
     const newImage = Object.assign(newFile, {
-      preview: URL.createObjectURL(newFile)
+      preview: URL.createObjectURL(newFile),
+      originalName: newFile.name
     }) as ImageFile;
     
     setImages(prev => {
@@ -115,9 +118,15 @@ const AddProperty: React.FC = () => {
       // Step 2: Upload images if any
       if (images.length > 0) {
         const formData = new FormData();
+        const imageNames: string[] = [];
+        
         images.forEach((image, index) => {
           formData.append(`images`, image);
+          imageNames.push(image.originalName);
         });
+
+        // Send image names along with the files
+        formData.append('imageNames', JSON.stringify(imageNames));
 
         await axios.post(`/api/properties/${propertyId}/images`, formData, {
           headers: {

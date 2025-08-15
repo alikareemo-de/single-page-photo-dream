@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import SearchFilters from '@/components/SearchFilters';
+import PropertyImageGallery from '@/components/PropertyImageGallery';
 import { ArrowLeft, Heart, MapPin } from "lucide-react";
 
 interface PropertyDetailData {
@@ -137,21 +138,10 @@ const PropertyDetails: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left column - Property images */}
             <div className="lg:col-span-2">
-              <div className="bg-gray-200 h-96 rounded-lg flex items-center justify-center mb-4">
-                <div className="text-gray-500">Main Property Image</div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-gray-200 h-24 rounded-lg flex items-center justify-center">
-                  <div className="text-gray-500 text-xs">Image 1</div>
-                </div>
-                <div className="bg-gray-200 h-24 rounded-lg flex items-center justify-center">
-                  <div className="text-gray-500 text-xs">Image 2</div>
-                </div>
-                <div className="bg-gray-200 h-24 rounded-lg flex items-center justify-center">
-                  <div className="text-gray-500 text-xs">Image 3</div>
-                </div>
-              </div>
+              <PropertyImageGallery 
+                images={property.images} 
+                propertyTitle={property.title}
+              />
               
               {/* Property description */}
               <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
