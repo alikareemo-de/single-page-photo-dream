@@ -1,113 +1,70 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import SearchFilters from '@/components/SearchFilters';
 import PropertyImageGallery from '@/components/PropertyImageGallery';
-import { ArrowLeft, Heart, MapPin } from "lucide-react";
-
-interface PropertyDetailData {
-  id: number;
-  title: string;
-  location: string;
-  price: number;
-  description: string;
-  features: string[];
-  images: string[];
-}
-
-// Mock data - in a real app this would come from an API
-const mockProperties: Record<string, PropertyDetailData> = {
-  "1": {
-    id: 1,
-    title: "Luxury Villa",
-    location: "Miami / USA",
-    price: 299,
-    description: "Experience the ultimate in luxury living with this stunning villa. Featuring panoramic ocean views, a private pool, and lush gardens, this property offers the perfect retreat for those seeking privacy and comfort.",
-    features: ["4 Bedrooms", "3 Bathrooms", "Private Pool", "Ocean View", "Garden", "Parking", "Wi-Fi", "Air Conditioning"],
-    images: ["villa1.jpg", "villa2.jpg", "villa3.jpg"]
-  },
-  "2": {
-    id: 2,
-    title: "Beach House",
-    location: "Barcelona / Spain",
-    price: 199,
-    description: "Enjoy the Mediterranean lifestyle in this charming beach house. Just steps away from the golden sands, this property features a spacious terrace perfect for watching the sunset over the sea.",
-    features: ["3 Bedrooms", "2 Bathrooms", "Terrace", "Sea View", "Beach Access", "Parking", "Wi-Fi", "Air Conditioning"],
-    images: ["beach1.jpg", "beach2.jpg", "beach3.jpg"]
-  },
-  "3": {
-    id: 3,
-    title: "Downtown Loft",
-    location: "New York / USA",
-    price: 249,
-    description: "Modern urban living at its finest in this spacious downtown loft. High ceilings, exposed brick, and floor-to-ceiling windows offer a stylish space in the heart of the city.",
-    features: ["2 Bedrooms", "2 Bathrooms", "Open Plan", "City View", "Gym Access", "Security", "Wi-Fi", "Heating"],
-    images: ["loft1.jpg", "loft2.jpg", "loft3.jpg"]
-  },
-  "4": {
-    id: 4,
-    title: "Mountain Cabin",
-    location: "Aspen / USA",
-    price: 179,
-    description: "Escape to the mountains in this cozy cabin. Surrounded by nature yet equipped with modern amenities, it's the perfect base for outdoor adventures or peaceful retreats.",
-    features: ["3 Bedrooms", "1 Bathroom", "Fireplace", "Mountain View", "Hiking Trails", "Parking", "Wi-Fi", "Heating"],
-    images: ["cabin1.jpg", "cabin2.jpg", "cabin3.jpg"]
-  },
-  "5": {
-    id: 5,
-    title: "Modern Apartment",
-    location: "London / UK",
-    price: 159,
-    description: "Contemporary living in this sleek apartment in a prime London location. Elegant design meets functionality with high-end finishes and smart home features.",
-    features: ["1 Bedroom", "1 Bathroom", "Balcony", "City View", "Concierge", "Security", "Wi-Fi", "Heating"],
-    images: ["apartment1.jpg", "apartment2.jpg", "apartment3.jpg"]
-  },
-  "6": {
-    id: 6,
-    title: "Historic Townhouse",
-    location: "Boston / USA",
-    price: 219,
-    description: "Step back in time with this beautifully preserved historic townhouse. Original features blend seamlessly with modern updates for comfortable contemporary living.",
-    features: ["4 Bedrooms", "2.5 Bathrooms", "Garden", "Period Features", "Central Location", "Parking", "Wi-Fi", "Heating"],
-    images: ["townhouse1.jpg", "townhouse2.jpg", "townhouse3.jpg"]
-  },
-  "7": {
-    id: 7,
-    title: "Seaside Cottage",
-    location: "Cape Cod / USA",
-    price: 189,
-    description: "Charming seaside cottage with character and comfort. Wake up to the sound of waves and enjoy easy access to sandy beaches and coastal walks.",
-    features: ["2 Bedrooms", "1 Bathroom", "Porch", "Sea View", "Beach Access", "Parking", "Wi-Fi", "Air Conditioning"],
-    images: ["cottage1.jpg", "cottage2.jpg", "cottage3.jpg"]
-  },
-  "8": {
-    id: 8,
-    title: "City View Penthouse",
-    location: "Chicago / USA",
-    price: 279,
-    description: "Luxury penthouse offering spectacular city views. Floor-to-ceiling windows, premium finishes, and an expansive terrace make this the ultimate urban retreat.",
-    features: ["3 Bedrooms", "3 Bathrooms", "Terrace", "City View", "Gym Access", "Security", "Wi-Fi", "Climate Control"],
-    images: ["penthouse1.jpg", "penthouse2.jpg", "penthouse3.jpg"]
-  }
-};
+import { fetchPropertyById, Property } from '@/services/propertyApi';
+import { ArrowLeft, Heart, MapPin, Loader2 } from "lucide-react";
 
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = React.useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  const property = id && mockProperties[id] ? mockProperties[id] : null;
+  useEffect(() => {
+    const loadProperty = async () => {
+      if (!id) {
+        setError('Property ID not found');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const propertyData = await fetchPropertyById(id);
+        setProperty(propertyData);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load property');
+        setProperty(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProperty();
+  }, [id]);
   
-  if (!property) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navigation />
         <div className="flex-grow flex items-center justify-center">
           <div className="text-center p-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Property Not Found</h2>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-800">Loading property...</h2>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+  
+  if (error || !property) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navigation />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              {error || 'Property Not Found'}
+            </h2>
             <Button onClick={() => navigate('/')}>Back to Home</Button>
           </div>
         </div>

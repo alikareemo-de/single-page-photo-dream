@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getImageUrl } from '@/services/propertyApi';
 
 interface PropertyImageGalleryProps {
   images: string[];
@@ -48,7 +49,7 @@ const PropertyImageGallery: React.FC<PropertyImageGalleryProps> = ({
       >
         {images[0] ? (
           <img 
-            src={`/api/images/${images[0]}`} 
+            src={getImageUrl(images[0])} 
             alt={`${propertyTitle} - Main view`}
             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
             onError={(e) => {
@@ -70,7 +71,7 @@ const PropertyImageGallery: React.FC<PropertyImageGalleryProps> = ({
           >
             {image ? (
               <img 
-                src={`/api/images/${image}`} 
+                src={getImageUrl(image)} 
                 alt={`${propertyTitle} - View ${index + 2}`}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                 onError={(e) => {
@@ -124,7 +125,7 @@ const PropertyImageGallery: React.FC<PropertyImageGalleryProps> = ({
 
             {/* Main Image */}
             <img 
-              src={`/api/images/${images[selectedImageIndex]}`}
+              src={getImageUrl(images[selectedImageIndex])}
               alt={`${propertyTitle} - View ${selectedImageIndex + 1}`}
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
