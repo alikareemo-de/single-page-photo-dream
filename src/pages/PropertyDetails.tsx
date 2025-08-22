@@ -10,7 +10,7 @@ import SearchFilters from '@/components/SearchFilters';
 import PropertyImageGallery from '@/components/PropertyImageGallery';
 import { fetchPropertyById, Property } from '@/services/propertyApi';
 import { useUser } from '@/contexts/UserContext';
-import { ArrowLeft, Heart, MapPin, Loader2, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Loader2, Edit, Save, X, Upload, Trash2, Star } from "lucide-react";
 
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -159,6 +159,41 @@ const PropertyDetails: React.FC = () => {
     });
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || !editedProperty) return;
+
+    // Convert FileList to Array and create URLs for preview
+    const newImageFiles = Array.from(files);
+    const imageUrls = newImageFiles.map(file => URL.createObjectURL(file));
+    
+    setEditedProperty({
+      ...editedProperty,
+      images: [...editedProperty.images, ...imageUrls]
+    });
+  };
+
+  const removeImage = (index: number) => {
+    if (!editedProperty) return;
+    const newImages = editedProperty.images.filter((_, i) => i !== index);
+    setEditedProperty({
+      ...editedProperty,
+      images: newImages
+    });
+  };
+
+  const setMainImage = (index: number) => {
+    if (!editedProperty) return;
+    const newImages = [...editedProperty.images];
+    const mainImage = newImages[index];
+    newImages.splice(index, 1);
+    newImages.unshift(mainImage);
+    setEditedProperty({
+      ...editedProperty,
+      images: newImages
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -177,10 +212,82 @@ const PropertyDetails: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left column - Property images */}
             <div className="lg:col-span-2">
-              <PropertyImageGallery 
-                images={property.images} 
-                propertyTitle={property.title}
-              />
+              {isEditing && editedProperty && isOwner ? (
+                <div className="space-y-4 mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-800">Property Images</h2>
+                  
+                  {/* Image Grid with Edit Controls */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {editedProperty.images.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={image.startsWith('blob:') ? image : `/api/images/${image}`}
+                          alt={`Property image ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
+                        />
+                        
+                        {/* Main image indicator */}
+                        {index === 0 && (
+                          <div className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                            <Star className="h-3 w-3 mr-1" />
+                            Main
+                          </div>
+                        )}
+                        
+                        {/* Image controls */}
+                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                          <div className="flex space-x-2">
+                            {index !== 0 && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => setMainImage(index)}
+                                className="text-xs"
+                              >
+                                <Star className="h-3 w-3" />
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => removeImage(index)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Add new image button */}
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+                      >
+                        <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                        <span className="text-sm text-gray-500">Add Images</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <PropertyImageGallery 
+                  images={property.images} 
+                  propertyTitle={property.title}
+                />
+              )}
               
               {/* Property description */}
               <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
