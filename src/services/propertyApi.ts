@@ -6,6 +6,7 @@ export interface Property {
   description: string;
   features: string[];
   images: string[];
+  userId: string;
 }
 
 // Base API URL - you should replace this with your actual API endpoint
