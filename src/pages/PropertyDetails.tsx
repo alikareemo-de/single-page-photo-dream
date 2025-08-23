@@ -11,7 +11,7 @@ import PropertyImageGallery from '@/components/PropertyImageGallery';
 import { fetchPropertyById, Property } from '@/services/propertyApi';
 import { useUser } from '@/contexts/UserContext';
 import { ArrowLeft, Heart, MapPin, Loader2, Edit, Save, X, Upload, Trash2, Star } from "lucide-react";
-
+import axios from "axios";
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ const PropertyDetails: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [removedImages, setRemovedImages] = useState<string[]>([]);
+  const [newImageMap, setNewImageMap] = useState<Record<string, File>>({});
   
   useEffect(() => {
     const loadProperty = async () => {
@@ -98,14 +99,15 @@ const PropertyDetails: React.FC = () => {
     setEditedProperty(property);
     setNewImages([]);
     setRemovedImages([]);
+    setNewImageMap({});
   };
 
   const handleSave = async () => {
     if (!editedProperty || !id) return;
-    
+
     try {
       setSaving(true);
-      
+
       // Step 1: Update property data
       const response = await fetch(`/api/properties/${id}`, {
         method: 'PUT',
@@ -125,32 +127,48 @@ const PropertyDetails: React.FC = () => {
         throw new Error('Failed to update property');
       }
 
-      // Step 2: Handle image updates if there are new images or removed images
-      if (newImages.length > 0 || removedImages.length > 0) {
+      // Step 2: Send ALL images (existing + new) in order, same as AddProperty
+      if (editedProperty.images.length > 0) {
         const formData = new FormData();
-        
-        // Add new images
-        newImages.forEach((image) => {
-          formData.append('images', image);
-        });
-        
-        // Add removed images list
-        if (removedImages.length > 0) {
-          formData.append('removedImages', JSON.stringify(removedImages));
-        }
-        
-        // Add current image order
-        const currentImages = editedProperty.images.filter(img => !removedImages.includes(img));
-        formData.append('imageOrder', JSON.stringify(currentImages));
+        const imageNames: string[] = [];
 
-        const imageResponse = await fetch(`/api/properties/${id}/images`, {
-          method: 'PUT',
-          body: formData,
+        // Build an array of files in the current order
+        const files: File[] = await Promise.all(
+          editedProperty.images.map(async (img) => {
+            if (img.startsWith('blob:')) {
+              // New image from this session
+              const file = newImageMap[img];
+              if (!file) {
+                throw new Error('Missing file for a newly added image');
+              }
+              imageNames.push(file.name);
+              return file;
+            } else {
+              // Existing image: fetch from server and re-send as file
+              const res = await fetch(`/api/images/${img}`);
+              if (!res.ok) {
+                throw new Error(`Failed to fetch existing image: ${img}`);
+              }
+              const blob = await res.blob();
+              const file = new File([blob], img, { type: blob.type || 'image/jpeg' });
+              imageNames.push(img);
+              return file;
+            }
+          })
+        );
+
+        // Append all files
+        files.forEach((file) => {
+          formData.append('images', file);
         });
 
-        if (!imageResponse.ok) {
-          throw new Error('Failed to update images');
-        }
+        // Add image names to preserve names/order (server-compatible with AddProperty)
+        formData.append('imageNames', JSON.stringify(imageNames));
+
+        // Upload via the same endpoint contract as AddProperty
+        await axios.post(`/api/properties/${id}/images`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       }
 
       // Reload property data
@@ -160,7 +178,7 @@ const PropertyDetails: React.FC = () => {
       setIsEditing(false);
       setNewImages([]);
       setRemovedImages([]);
-      
+      setNewImageMap({});
     } catch (error) {
       console.error('Error updating property:', error);
       alert('Failed to update property. Please try again.');
@@ -212,7 +230,16 @@ const PropertyDetails: React.FC = () => {
     const newImageFiles = Array.from(files);
     const imageUrls = newImageFiles.map(file => URL.createObjectURL(file));
     
-    // Add files to newImages state for upload
+    // Track mapping from blob URL to File for later upload
+    setNewImageMap((prev) => {
+      const next = { ...prev };
+      imageUrls.forEach((url, idx) => {
+        next[url] = newImageFiles[idx];
+      });
+      return next;
+    });
+    
+    // Add files to newImages state for upload (optional, kept for reference)
     setNewImages(prev => [...prev, ...newImageFiles]);
     
     setEditedProperty({
@@ -226,15 +253,21 @@ const PropertyDetails: React.FC = () => {
     
     const imageToRemove = editedProperty.images[index];
     
-    // If it's an existing image (not a blob URL), add to removed list
-    if (!imageToRemove.startsWith('blob:')) {
-      setRemovedImages(prev => [...prev, imageToRemove]);
+    // If it's a newly added blob URL, clean up mapping and revoke the URL
+    if (imageToRemove.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(imageToRemove);
+      } catch {}
+      setNewImageMap((prev) => {
+        const { [imageToRemove]: _, ...rest } = prev;
+        return rest;
+      });
     }
     
-    const newImages = editedProperty.images.filter((_, i) => i !== index);
+    const newImagesList = editedProperty.images.filter((_, i) => i !== index);
     setEditedProperty({
       ...editedProperty,
-      images: newImages
+      images: newImagesList
     });
   };
 
