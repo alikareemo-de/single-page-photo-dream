@@ -23,6 +23,8 @@ const PropertyDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProperty, setEditedProperty] = useState<Property | null>(null);
   const [saving, setSaving] = useState(false);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [removedImages, setRemovedImages] = useState<string[]>([]);
   
   useEffect(() => {
     const loadProperty = async () => {
@@ -94,6 +96,8 @@ const PropertyDetails: React.FC = () => {
   const handleCancel = () => {
     setIsEditing(false);
     setEditedProperty(property);
+    setNewImages([]);
+    setRemovedImages([]);
   };
 
   const handleSave = async () => {
@@ -101,21 +105,62 @@ const PropertyDetails: React.FC = () => {
     
     try {
       setSaving(true);
+      
+      // Step 1: Update property data
       const response = await fetch(`/api/properties/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editedProperty),
+        body: JSON.stringify({
+          title: editedProperty.title,
+          location: editedProperty.location,
+          price: editedProperty.price,
+          description: editedProperty.description,
+          features: editedProperty.features,
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update property');
       }
 
-      const updatedProperty = await response.json();
+      // Step 2: Handle image updates if there are new images or removed images
+      if (newImages.length > 0 || removedImages.length > 0) {
+        const formData = new FormData();
+        
+        // Add new images
+        newImages.forEach((image) => {
+          formData.append('images', image);
+        });
+        
+        // Add removed images list
+        if (removedImages.length > 0) {
+          formData.append('removedImages', JSON.stringify(removedImages));
+        }
+        
+        // Add current image order
+        const currentImages = editedProperty.images.filter(img => !removedImages.includes(img));
+        formData.append('imageOrder', JSON.stringify(currentImages));
+
+        const imageResponse = await fetch(`/api/properties/${id}/images`, {
+          method: 'PUT',
+          body: formData,
+        });
+
+        if (!imageResponse.ok) {
+          throw new Error('Failed to update images');
+        }
+      }
+
+      // Reload property data
+      const updatedProperty = await fetchPropertyById(id);
       setProperty(updatedProperty);
+      setEditedProperty(updatedProperty);
       setIsEditing(false);
+      setNewImages([]);
+      setRemovedImages([]);
+      
     } catch (error) {
       console.error('Error updating property:', error);
       alert('Failed to update property. Please try again.');
@@ -167,6 +212,9 @@ const PropertyDetails: React.FC = () => {
     const newImageFiles = Array.from(files);
     const imageUrls = newImageFiles.map(file => URL.createObjectURL(file));
     
+    // Add files to newImages state for upload
+    setNewImages(prev => [...prev, ...newImageFiles]);
+    
     setEditedProperty({
       ...editedProperty,
       images: [...editedProperty.images, ...imageUrls]
@@ -175,6 +223,14 @@ const PropertyDetails: React.FC = () => {
 
   const removeImage = (index: number) => {
     if (!editedProperty) return;
+    
+    const imageToRemove = editedProperty.images[index];
+    
+    // If it's an existing image (not a blob URL), add to removed list
+    if (!imageToRemove.startsWith('blob:')) {
+      setRemovedImages(prev => [...prev, imageToRemove]);
+    }
+    
     const newImages = editedProperty.images.filter((_, i) => i !== index);
     setEditedProperty({
       ...editedProperty,
