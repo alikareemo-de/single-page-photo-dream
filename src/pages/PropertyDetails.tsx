@@ -108,67 +108,57 @@ const PropertyDetails: React.FC = () => {
     try {
       setSaving(true);
 
-      // Step 1: Update property data
-      const response = await fetch(`/api/properties/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: editedProperty.title,
-          location: editedProperty.location,
-          price: editedProperty.price,
-          description: editedProperty.description,
-          features: editedProperty.features,
-        }),
-      });
+      const formData = new FormData();
+      
+      // Add property data
+      formData.append('id', id);
+      formData.append('title', editedProperty.title);
+      formData.append('location', editedProperty.location);
+      formData.append('price', editedProperty.price.toString());
+      formData.append('description', editedProperty.description);
+      formData.append('features', JSON.stringify(editedProperty.features));
+      formData.append('userId', editedProperty.userId);
 
-      if (!response.ok) {
-        throw new Error('Failed to update property');
+      // Prepare images data
+      const oldImages: string[] = [];
+      const newImageFiles: File[] = [];
+      const imageNames: string[] = [];
+
+      // Process all images in order
+      for (const img of editedProperty.images) {
+        if (img.startsWith('blob:')) {
+          // New image from this session
+          const file = newImageMap[img];
+          if (!file) {
+            throw new Error('Missing file for a newly added image');
+          }
+          newImageFiles.push(file);
+          imageNames.push(file.name);
+        } else {
+          // Existing image
+          oldImages.push(img);
+          imageNames.push(img);
+        }
       }
 
-      // Step 2: Send ALL images (existing + new) in order, same as AddProperty
-      if (editedProperty.images.length > 0) {
-        const formData = new FormData();
-        const imageNames: string[] = [];
+      // Add old images metadata
+      formData.append('oldImages', JSON.stringify(oldImages));
+      
+      // Add new image files
+      newImageFiles.forEach((file) => {
+        formData.append('newImages', file);
+      });
 
-        // Build an array of files in the current order
-        const files: File[] = await Promise.all(
-          editedProperty.images.map(async (img) => {
-            if (img.startsWith('blob:')) {
-              // New image from this session
-              const file = newImageMap[img];
-              if (!file) {
-                throw new Error('Missing file for a newly added image');
-              }
-              imageNames.push(file.name);
-              return file;
-            } else {
-              // Existing image: fetch from server and re-send as file
-              const res = await fetch(`/api/images/${img}`);
-              if (!res.ok) {
-                throw new Error(`Failed to fetch existing image: ${img}`);
-              }
-              const blob = await res.blob();
-              const file = new File([blob], img, { type: blob.type || 'image/jpeg' });
-              imageNames.push(img);
-              return file;
-            }
-          })
-        );
+      // Add image names to preserve order
+      formData.append('imageNames', JSON.stringify(imageNames));
 
-        // Append all files
-        files.forEach((file) => {
-          formData.append('images', file);
-        });
+      // Send single request with all data
+      const response = await axios.post(`/api/properties/${id}/update`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
-        // Add image names to preserve names/order (server-compatible with AddProperty)
-        formData.append('imageNames', JSON.stringify(imageNames));
-
-        // Upload via the same endpoint contract as AddProperty
-        await axios.post(`/api/properties/${id}/images`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+      if (response.status !== 200) {
+        throw new Error('Failed to update property');
       }
 
       // Reload property data
