@@ -13,8 +13,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { X, Upload, Eye } from 'lucide-react';
 
+enum PropertyType {
+  Apartment = 1,
+  House = 2,
+  Villa = 3
+}
+
 interface PropertyFormData {
-  type: string;
+  type: PropertyType;
   description: string;
   capacity: number;
   pricePerNight: number;
@@ -180,20 +186,17 @@ const AddProperty: React.FC = () => {
             {/* Type */}
             <div className="space-y-2">
               <Label htmlFor="type">Property Type *</Label>
-              <Select onValueChange={(value) => setValue('type', value, { shouldValidate: true })}>
+              <Select onValueChange={(value) => setValue('type', Number(value) as PropertyType, { shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select property type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="apartment">Apartment</SelectItem>
-                  <SelectItem value="house">House</SelectItem>
-                  <SelectItem value="villa">Villa</SelectItem>
-                  <SelectItem value="studio">Studio</SelectItem>
-                  <SelectItem value="room">Room</SelectItem>
-                  <SelectItem value="hostel">Hostel</SelectItem>
+                  <SelectItem value={PropertyType.Apartment.toString()}>Apartment</SelectItem>
+                  <SelectItem value={PropertyType.House.toString()}>House</SelectItem>
+                  <SelectItem value={PropertyType.Villa.toString()}>Villa</SelectItem>
                 </SelectContent>
               </Select>
-              <input type="hidden" {...register('type', { required: 'Property type is required' })} />
+              <input type="hidden" {...register('type', { required: 'Property type is required', valueAsNumber: true })} />
               {errors.type && <p className="text-sm text-destructive">Property type is required</p>}
             </div>
 
