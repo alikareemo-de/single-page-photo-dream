@@ -7,6 +7,8 @@ export interface Property {
   features: string[];
   images: string[];
   userId: string;
+  type?: number;
+  expireDate?: Date;
 }
 
 // Base API URL - you should replace this with your actual API endpoint

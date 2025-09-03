@@ -1,17 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import SearchFilters from '@/components/SearchFilters';
 import PropertyImageGallery from '@/components/PropertyImageGallery';
 import { fetchPropertyById, Property } from '@/services/propertyApi';
 import { useUser } from '@/contexts/UserContext';
-import { ArrowLeft, Heart, MapPin, Loader2, Edit, Save, X, Upload, Trash2, Star } from "lucide-react";
+import { cn } from '@/lib/utils';
+import { ArrowLeft, Heart, MapPin, Loader2, Edit, Save, X, Upload, Trash2, Star, CalendarIcon } from "lucide-react";
 import axios from "axios";
+
+enum PropertyType {
+  Apartment = 1,
+  House = 2,
+  Villa = 3
+}
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -118,6 +129,14 @@ const PropertyDetails: React.FC = () => {
       formData.append('description', editedProperty.description);
       formData.append('features', JSON.stringify(editedProperty.features));
       formData.append('userId', editedProperty.userId);
+      
+      // Add new fields
+      if (editedProperty.type) {
+        formData.append('type', editedProperty.type.toString());
+      }
+      if (editedProperty.expireDate) {
+        formData.append('expireDate', editedProperty.expireDate.toISOString());
+      }
 
       // Prepare images data
       const oldImages: string[] = [];
@@ -177,7 +196,7 @@ const PropertyDetails: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: keyof Property, value: string | number | string[]) => {
+  const handleInputChange = (field: keyof Property, value: string | number | string[] | Date) => {
     if (!editedProperty) return;
     setEditedProperty({
       ...editedProperty,
@@ -465,6 +484,71 @@ const PropertyDetails: React.FC = () => {
                     <span>{property.location}</span>
                   )}
                 </div>
+                
+                {/* Property Type */}
+                {(property.type || (isEditing && editedProperty)) && (
+                  <div className="mb-4">
+                    <span className="text-gray-600 block mb-2">Property Type</span>
+                    {isEditing && editedProperty ? (
+                      <Select 
+                        value={editedProperty.type?.toString() || ''} 
+                        onValueChange={(value) => handleInputChange('type', Number(value))}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select property type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={PropertyType.Apartment.toString()}>Apartment</SelectItem>
+                          <SelectItem value={PropertyType.House.toString()}>House</SelectItem>
+                          <SelectItem value={PropertyType.Villa.toString()}>Villa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span className="text-gray-800">
+                        {property.type === PropertyType.Apartment && 'Apartment'}
+                        {property.type === PropertyType.House && 'House'}
+                        {property.type === PropertyType.Villa && 'Villa'}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Expire Date */}
+                {(property.expireDate || (isEditing && editedProperty)) && (
+                  <div className="mb-4">
+                    <span className="text-gray-600 block mb-2">Expire Date</span>
+                    {isEditing && editedProperty ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !editedProperty.expireDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {editedProperty.expireDate ? format(editedProperty.expireDate, "PPP") : "Select expire date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={editedProperty.expireDate}
+                            onSelect={(date) => handleInputChange('expireDate', date)}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <span className="text-gray-800">
+                        {property.expireDate ? format(new Date(property.expireDate), "PPP") : 'Not set'}
+                      </span>
+                    )}
+                  </div>
+                )}
                 
                 <div className="border-t border-b border-gray-200 py-4 my-4">
                   <div className="mb-2">
