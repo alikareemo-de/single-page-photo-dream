@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
+import { format } from 'date-fns';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from '@/hooks/use-toast';
-import { X, Upload, Eye } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { X, Upload, Eye, CalendarIcon } from 'lucide-react';
 
 enum PropertyType {
   Apartment = 1,
@@ -31,6 +35,7 @@ interface PropertyFormData {
   rooms: number;
   hasCar: boolean;
   tripPlan: string;
+  expireDate: Date;
 }
 
 interface ImageFile extends File {
@@ -329,6 +334,37 @@ const AddProperty: React.FC = () => {
                 className="min-h-[100px]"
                 {...register('tripPlan')}
               />
+            </div>
+
+            {/* Expire Date */}
+            <div className="space-y-2">
+              <Label htmlFor="expireDate">Expire Date *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !watch('expireDate') && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {watch('expireDate') ? format(watch('expireDate'), "PPP") : "Select expire date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={watch('expireDate')}
+                    onSelect={(date) => setValue('expireDate', date!, { shouldValidate: true })}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <input type="hidden" {...register('expireDate', { required: 'Expire date is required' })} />
+              {errors.expireDate && <p className="text-sm text-destructive">Expire date is required</p>}
             </div>
 
             {/* Image Upload */}
