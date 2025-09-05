@@ -196,7 +196,7 @@ const PropertyDetails: React.FC = () => {
     }
   };
 
-  const handleInputChange = (field: keyof Property, value: string | number | string[] | Date) => {
+  const handleInputChange = (field: keyof Property, value: string | number | string[] | Date | boolean) => {
     if (!editedProperty) return;
     setEditedProperty({
       ...editedProperty,
@@ -513,42 +513,191 @@ const PropertyDetails: React.FC = () => {
                   </div>
                 )}
 
+                {/* Property Name */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Property Name</span>
+                  {isEditing && editedProperty ? (
+                    <Input 
+                      value={editedProperty.propertyName || editedProperty.title}
+                      onChange={(e) => handleInputChange('propertyName', e.target.value)}
+                      placeholder="Property name..."
+                      className="w-full"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.propertyName || property.title}</span>
+                  )}
+                </div>
+
+                {/* Status */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Status</span>
+                  {isEditing && editedProperty ? (
+                    <Select 
+                      value={editedProperty.status || ''} 
+                      onValueChange={(value) => handleInputChange('status', value)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="booked">Booked</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-gray-800">{property.status || 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* City */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">City</span>
+                  {isEditing && editedProperty ? (
+                    <Input 
+                      value={editedProperty.city || ''}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      placeholder="City..."
+                      className="w-full"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.city || 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* Country */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Country</span>
+                  {isEditing && editedProperty ? (
+                    <Input 
+                      value={editedProperty.country || ''}
+                      onChange={(e) => handleInputChange('country', e.target.value)}
+                      placeholder="Country..."
+                      className="w-full"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.country || 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* Capacity */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Capacity (guests)</span>
+                  {isEditing && editedProperty ? (
+                    <Input 
+                      type="number"
+                      value={editedProperty.capacity || ''}
+                      onChange={(e) => handleInputChange('capacity', Number(e.target.value))}
+                      placeholder="Number of guests..."
+                      className="w-full"
+                      min="1"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.capacity ? `${property.capacity} guests` : 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* Rooms */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Number of Rooms</span>
+                  {isEditing && editedProperty ? (
+                    <Input 
+                      type="number"
+                      value={editedProperty.rooms || ''}
+                      onChange={(e) => handleInputChange('rooms', Number(e.target.value))}
+                      placeholder="Number of rooms..."
+                      className="w-full"
+                      min="1"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.rooms ? `${property.rooms} rooms` : 'Not specified'}</span>
+                  )}
+                </div>
+
+                {/* Has Car */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Car Available</span>
+                  {isEditing && editedProperty ? (
+                    <Select 
+                      value={editedProperty.hasCar?.toString() || ''} 
+                      onValueChange={(value) => handleInputChange('hasCar', value === 'true')}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Car availability" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-gray-800">{property.hasCar ? 'Yes' : 'No'}</span>
+                  )}
+                </div>
+
+                {/* Trip Plan */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Trip Plan</span>
+                  {isEditing && editedProperty ? (
+                    <Textarea 
+                      value={editedProperty.tripPlan || ''}
+                      onChange={(e) => handleInputChange('tripPlan', e.target.value)}
+                      placeholder="Trip plan details..."
+                      className="w-full min-h-[80px]"
+                    />
+                  ) : (
+                    <span className="text-gray-800">{property.tripPlan || 'No trip plan specified'}</span>
+                  )}
+                </div>
+
                 {/* Expire Date */}
-                {(property.expireDate || (isEditing && editedProperty)) && (
-                  <div className="mb-4">
-                    <span className="text-gray-600 block mb-2">Expire Date</span>
-                    {isEditing && editedProperty ? (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !editedProperty.expireDate && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {editedProperty.expireDate ? format(editedProperty.expireDate, "PPP") : "Select expire date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={editedProperty.expireDate}
-                            onSelect={(date) => handleInputChange('expireDate', date)}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    ) : (
-                      <span className="text-gray-800">
-                        {property.expireDate ? format(new Date(property.expireDate), "PPP") : 'Not set'}
-                      </span>
-                    )}
-                  </div>
-                )}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Expire Date</span>
+                  {isEditing && editedProperty ? (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editedProperty.expireDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editedProperty.expireDate ? format(editedProperty.expireDate, "PPP") : "Select expire date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={editedProperty.expireDate}
+                          onSelect={(date) => handleInputChange('expireDate', date)}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  ) : (
+                    <span className="text-gray-800">
+                      {property.expireDate ? format(new Date(property.expireDate), "PPP") : 'Not set'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Created Date */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Created Date</span>
+                  <span className="text-gray-800">
+                    {property.createdDate ? format(new Date(property.createdDate), "PPP") : 'Not available'}
+                  </span>
+                </div>
+
+                {/* Property ID */}
+                <div className="mb-4">
+                  <span className="text-gray-600 block mb-2">Property ID</span>
+                  <span className="text-gray-800 font-mono text-sm">{property.id}</span>
+                </div>
                 
                 <div className="border-t border-b border-gray-200 py-4 my-4">
                   <div className="mb-2">

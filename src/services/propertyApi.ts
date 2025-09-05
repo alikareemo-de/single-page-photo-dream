@@ -1,5 +1,5 @@
 export interface Property {
-  id: number;
+  id: string;
   title: string;
   location: string;
   price: number;
@@ -9,6 +9,15 @@ export interface Property {
   userId: string;
   type?: number;
   expireDate?: Date;
+  propertyName?: string;
+  status?: string;
+  city?: string;
+  country?: string;
+  capacity?: number;
+  rooms?: number;
+  hasCar?: boolean;
+  tripPlan?: string;
+  createdDate?: string;
 }
 
 // Base API URL - you should replace this with your actual API endpoint
