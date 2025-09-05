@@ -23,6 +23,13 @@ enum PropertyType {
   House = 2,
   Villa = 3
 }
+
+const availableFeatures = [
+  'Wi-Fi', 'Parking', 'Pool', 'Gym', 'Air Conditioning', 'Heating',
+  'Kitchen', 'Laundry', 'Balcony', 'Garden', 'Pets Allowed', 'Smoking Allowed',
+  'Wheelchair Accessible', 'Elevator', 'Security', 'Concierge'
+];
+
 const PropertyDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -49,6 +56,10 @@ const PropertyDetails: React.FC = () => {
       try {
         setLoading(true);
         const propertyData = await fetchPropertyById(id);
+        // Convert comma-separated features string to array
+        if (propertyData.features && typeof propertyData.features === 'string') {
+          (propertyData as any).features = propertyData.features.split(',').map(f => f.trim()).filter(f => f);
+        }
         setProperty(propertyData);
         setEditedProperty(propertyData);
         setError(null);
@@ -127,7 +138,7 @@ const PropertyDetails: React.FC = () => {
       formData.append('location', editedProperty.location);
       formData.append('price', editedProperty.price.toString());
       formData.append('description', editedProperty.description);
-      formData.append('features', JSON.stringify(editedProperty.features));
+      formData.append('features', Array.isArray(editedProperty.features) ? editedProperty.features.join(',') : editedProperty.features || '');
       formData.append('userId', editedProperty.userId);
       
       // Add new fields
@@ -182,6 +193,10 @@ const PropertyDetails: React.FC = () => {
 
       // Reload property data
       const updatedProperty = await fetchPropertyById(id);
+      // Convert comma-separated features string to array
+      if (updatedProperty.features && typeof updatedProperty.features === 'string') {
+        (updatedProperty as any).features = updatedProperty.features.split(',').map(f => f.trim()).filter(f => f);
+      }
       setProperty(updatedProperty);
       setEditedProperty(updatedProperty);
       setIsEditing(false);
@@ -204,27 +219,20 @@ const PropertyDetails: React.FC = () => {
     });
   };
 
-  const addFeature = () => {
+  const addFeature = (feature: string) => {
     if (!editedProperty) return;
+    const currentFeatures = Array.isArray(editedProperty.features) ? editedProperty.features : [];
+    if (currentFeatures.includes(feature)) return;
     setEditedProperty({
       ...editedProperty,
-      features: [...editedProperty.features, '']
+      features: [...currentFeatures, feature]
     });
   };
 
-  const updateFeature = (index: number, value: string) => {
+  const removeFeature = (feature: string) => {
     if (!editedProperty) return;
-    const newFeatures = [...editedProperty.features];
-    newFeatures[index] = value;
-    setEditedProperty({
-      ...editedProperty,
-      features: newFeatures
-    });
-  };
-
-  const removeFeature = (index: number) => {
-    if (!editedProperty) return;
-    const newFeatures = editedProperty.features.filter((_, i) => i !== index);
+    const currentFeatures = Array.isArray(editedProperty.features) ? editedProperty.features : [];
+    const newFeatures = currentFeatures.filter(f => f !== feature);
     setEditedProperty({
       ...editedProperty,
       features: newFeatures
@@ -402,44 +410,58 @@ const PropertyDetails: React.FC = () => {
                 )}
               </div>
               
-              {/* Property features */}
+                {/* Property features */}
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-4">Features</h2>
                 {isEditing && editedProperty ? (
                   <div className="space-y-3">
-                    {editedProperty.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <Input 
-                          value={feature}
-                          onChange={(e) => updateFeature(index, e.target.value)}
-                          placeholder="Feature name..."
-                          className="flex-1"
-                        />
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => removeFeature(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                    <Select onValueChange={(value) => addFeature(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Add a feature" />
+                      </SelectTrigger>
+                       <SelectContent>
+                        {availableFeatures.filter(feature => {
+                          const currentFeatures = Array.isArray(editedProperty.features) ? editedProperty.features : [];
+                          return !currentFeatures.includes(feature);
+                        }).map((feature) => (
+                          <SelectItem key={feature} value={feature}>{feature}</SelectItem>
+                        ))}
+                       </SelectContent>
+                    </Select>
+                    
+                    {/* Selected Features Display */}
+                    {Array.isArray(editedProperty.features) && editedProperty.features.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {editedProperty.features.map((feature, index) => (
+                          <div key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                            {feature}
+                            <button
+                              type="button"
+                              onClick={() => removeFeature(feature)}
+                              className="text-primary hover:text-primary/70"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                    <Button 
-                      variant="outline" 
-                      onClick={addFeature}
-                      className="w-full"
-                    >
-                      Add Feature
-                    </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {property.features.map((feature, index) => (
+                    {Array.isArray(property.features) ? property.features.map((feature, index) => (
                       <div key={index} className="flex items-center">
                         <div className="w-2 h-2 bg-[#6b7d65] rounded-full mr-2"></div>
                         <span className="text-gray-700">{feature}</span>
                       </div>
-                    ))}
+                    )) : (
+                      typeof property.features === 'string' && property.features.split(',').map((feature, index) => (
+                        <div key={index} className="flex items-center">
+                          <div className="w-2 h-2 bg-[#6b7d65] rounded-full mr-2"></div>
+                          <span className="text-gray-700">{feature.trim()}</span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

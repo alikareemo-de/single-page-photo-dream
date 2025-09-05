@@ -36,6 +36,7 @@ interface PropertyFormData {
   hasCar: boolean;
   tripPlan: string;
   expireDate: Date;
+  features: string[];
 }
 
 interface ImageFile extends File {
@@ -47,6 +48,13 @@ const AddProperty: React.FC = () => {
   const { user } = useUser();
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  const availableFeatures = [
+    'Wi-Fi', 'Parking', 'Pool', 'Gym', 'Air Conditioning', 'Heating',
+    'Kitchen', 'Laundry', 'Balcony', 'Garden', 'Pets Allowed', 'Smoking Allowed',
+    'Wheelchair Accessible', 'Elevator', 'Security', 'Concierge'
+  ];
   
   const {
     register,
@@ -57,7 +65,8 @@ const AddProperty: React.FC = () => {
     reset
   } = useForm<PropertyFormData>({
     defaultValues: {
-      hasCar: false
+      hasCar: false,
+      features: []
     }
   });
 
@@ -117,6 +126,7 @@ const AddProperty: React.FC = () => {
       // Step 1: Create property
       const propertyResponse = await axios.post('/api/properties', {
         ...data,
+        features: selectedFeatures.join(','), // Convert array to comma-separated string
         userId: user.id
       });
 
@@ -154,6 +164,7 @@ const AddProperty: React.FC = () => {
       // Reset form
       reset();
       setImages([]);
+      setSelectedFeatures([]);
 
     } catch (error: any) {
       console.error('Error adding property:', error);
@@ -334,6 +345,49 @@ const AddProperty: React.FC = () => {
                 className="min-h-[100px]"
                 {...register('tripPlan')}
               />
+            </div>
+
+            {/* Features */}
+            <div className="space-y-2">
+              <Label htmlFor="features">Features</Label>
+              <Select onValueChange={(value) => {
+                if (!selectedFeatures.includes(value)) {
+                  const newFeatures = [...selectedFeatures, value];
+                  setSelectedFeatures(newFeatures);
+                  setValue('features', newFeatures);
+                }
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select features" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableFeatures.filter(feature => !selectedFeatures.includes(feature)).map((feature) => (
+                    <SelectItem key={feature} value={feature}>{feature}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {/* Selected Features Display */}
+              {selectedFeatures.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {selectedFeatures.map((feature, index) => (
+                    <div key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                      {feature}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newFeatures = selectedFeatures.filter((_, i) => i !== index);
+                          setSelectedFeatures(newFeatures);
+                          setValue('features', newFeatures);
+                        }}
+                        className="text-primary hover:text-primary/70"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Expire Date */}

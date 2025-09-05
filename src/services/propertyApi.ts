@@ -4,7 +4,7 @@ export interface Property {
   location: string;
   price: number;
   description: string;
-  features: string[];
+  features: string[] | string;
   images: string[];
   userId: string;
   type?: number;
