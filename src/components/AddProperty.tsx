@@ -120,6 +120,29 @@ const AddProperty: React.FC = () => {
       return;
     }
 
+    // Check if user info is complete before allowing property addition
+    try {
+      const { checkUserInfo } = await import('@/services/userApi');
+      const userInfoComplete = await checkUserInfo(user.id);
+      
+      if (!userInfoComplete) {
+        toast({
+          title: "Incomplete Profile",
+          description: "You cannot add a property until you complete your information (e.g., payment method).",
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking user info:', error);
+      toast({
+        title: "Error",
+        description: "Unable to verify user information. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

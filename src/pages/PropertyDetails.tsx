@@ -791,8 +791,12 @@ const PropertyDetails: React.FC = () => {
                     Edit Property
                   </Button>
                 ) : (
-                  <Button className="w-full bg-[#6b7d65] hover:bg-[#5a6b55]">
-                    Book Now
+                  <Button 
+                    className="w-full bg-[#6b7d65] hover:bg-[#5a6b55] disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={property.status !== 'available'}
+                    onClick={() => navigate(`/add-book/${property.id}`)}
+                  >
+                    {property.status === 'available' ? 'Book Now' : `Unavailable (${property.status})`}
                   </Button>
                 )}
               </div>

@@ -107,6 +107,9 @@ const Navigation: React.FC = () => {
                 <Link to="/profile" className="cursor-pointer">My Profile</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/requests" className="cursor-pointer">Requests</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
                 <Link to="/properties" className="cursor-pointer">Properties</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">

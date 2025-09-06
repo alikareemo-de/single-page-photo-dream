@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PropertyDetails from "./pages/PropertyDetails";
 import Profile from "./pages/Profile";
+import Requests from "./pages/Requests";
+import AddBook from "./pages/AddBook";
 import Properties from "./pages/Properties";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/property/:id" element={<PropertyDetails />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/requests" element={<Requests />} />
+            <Route path="/add-book/:id" element={<AddBook />} />
             <Route path="/properties" element={<Properties />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
