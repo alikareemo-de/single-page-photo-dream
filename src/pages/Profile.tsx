@@ -8,12 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { User, MapPin, Mail, Phone, Calendar, Edit, Save, X } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import OTPModal from '@/components/OTPModal';
+import { User, MapPin, Mail, Phone, Calendar, Edit, Save, X, CreditCard, Lock } from 'lucide-react';
 
 const Profile = () => {
   const { toast } = useToast();
+  const { user } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
+  const [paymentFieldsEnabled, setPaymentFieldsEnabled] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   
   // Initial profile data
   const [originalData, setOriginalData] = useState({
@@ -28,6 +34,19 @@ const Profile = () => {
   });
 
   const [formData, setFormData] = useState(originalData);
+  
+  // Payment form data
+  const [paymentData, setPaymentData] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    cardholderName: '',
+    billingAddress: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: ''
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -75,6 +94,59 @@ const Profile = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePaymentInputChange = (field: string, value: string) => {
+    setPaymentData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleOTPSuccess = () => {
+    setPaymentFieldsEnabled(true);
+  };
+
+  const handleSavePaymentInfo = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "User not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      const response = await fetch('/api/payment/add-method', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...paymentData,
+          userId: user.id
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Payment method saved successfully",
+          description: "Your payment information has been securely stored.",
+        });
+      } else {
+        throw new Error('Failed to save payment method');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save payment method. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPaymentLoading(false);
     }
   };
   return (
@@ -280,10 +352,140 @@ const Profile = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Payment Info Section */}
+            <Card className="tourism-card p-6 mt-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-tourism-ocean">Payment Info</h2>
+                {!paymentFieldsEnabled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1 border-tourism-teal text-tourism-teal hover:bg-tourism-light-blue/50"
+                    onClick={() => setIsOTPModalOpen(true)}
+                  >
+                    <Lock className="h-4 w-4" />
+                    Add Payment Method
+                  </Button>
+                )}
+              </div>
+              
+              <Separator className="my-4" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">Card Number</label>
+                  <Input
+                    value={paymentData.cardNumber}
+                    onChange={(e) => handlePaymentInputChange('cardNumber', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="1234 5678 9012 3456"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">Cardholder Name</label>
+                  <Input
+                    value={paymentData.cardholderName}
+                    onChange={(e) => handlePaymentInputChange('cardholderName', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="John Smith"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">Expiry Date</label>
+                  <Input
+                    value={paymentData.expiryDate}
+                    onChange={(e) => handlePaymentInputChange('expiryDate', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="MM/YY"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">CVV</label>
+                  <Input
+                    value={paymentData.cvv}
+                    onChange={(e) => handlePaymentInputChange('cvv', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="123"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium block mb-1 text-gray-700">Billing Address</label>
+                  <Input
+                    value={paymentData.billingAddress}
+                    onChange={(e) => handlePaymentInputChange('billingAddress', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="123 Main Street"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">City</label>
+                  <Input
+                    value={paymentData.city}
+                    onChange={(e) => handlePaymentInputChange('city', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="New York"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">State</label>
+                  <Input
+                    value={paymentData.state}
+                    onChange={(e) => handlePaymentInputChange('state', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="NY"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">ZIP Code</label>
+                  <Input
+                    value={paymentData.zipCode}
+                    onChange={(e) => handlePaymentInputChange('zipCode', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="10001"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium block mb-1 text-gray-700">Country</label>
+                  <Input
+                    value={paymentData.country}
+                    onChange={(e) => handlePaymentInputChange('country', e.target.value)}
+                    disabled={!paymentFieldsEnabled}
+                    placeholder="United States"
+                    className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                  />
+                </div>
+              </div>
+
+              {paymentFieldsEnabled && (
+                <Button
+                  onClick={handleSavePaymentInfo}
+                  disabled={paymentLoading}
+                  className="flex items-center gap-1"
+                >
+                  <CreditCard className="h-4 w-4" />
+                  {paymentLoading ? 'Saving...' : 'Save Payment Info'}
+                </Button>
+              )}
+            </Card>
           </div>
         </div>
       </main>
       <Footer />
+      
+      <OTPModal
+        isOpen={isOTPModalOpen}
+        onClose={() => setIsOTPModalOpen(false)}
+        onSuccess={handleOTPSuccess}
+      />
     </div>
   );
 };

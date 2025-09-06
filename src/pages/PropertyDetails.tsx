@@ -415,19 +415,33 @@ const PropertyDetails: React.FC = () => {
                 <h2 className="text-2xl font-semibold text-gray-800 mb-4">Features</h2>
                 {isEditing && editedProperty ? (
                   <div className="space-y-3">
-                    <Select onValueChange={(value) => addFeature(value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Add a feature" />
-                      </SelectTrigger>
-                       <SelectContent>
-                        {availableFeatures.filter(feature => {
+                    {/* Multi-select for features */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Available Features (select multiple)</label>
+                      <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-1">
+                        {availableFeatures.map((feature) => {
                           const currentFeatures = Array.isArray(editedProperty.features) ? editedProperty.features : [];
-                          return !currentFeatures.includes(feature);
-                        }).map((feature) => (
-                          <SelectItem key={feature} value={feature}>{feature}</SelectItem>
-                        ))}
-                       </SelectContent>
-                    </Select>
+                          const isSelected = currentFeatures.includes(feature);
+                          return (
+                            <label key={feature} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    addFeature(feature);
+                                  } else {
+                                    removeFeature(feature);
+                                  }
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{feature}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
                     
                     {/* Selected Features Display */}
                     {Array.isArray(editedProperty.features) && editedProperty.features.length > 0 && (
