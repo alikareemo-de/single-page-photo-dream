@@ -120,7 +120,7 @@ namespace PropertyBooking.Controllers
                     return NotFound(new { message = "Request not found" });
                 }
 
-                if (request.Status != "pending")
+                if (request.Status != RequestStatus.Pending)
                 {
                     return BadRequest(new { message = "Only pending requests can be approved" });
                 }
@@ -149,7 +149,7 @@ namespace PropertyBooking.Controllers
                     return NotFound(new { message = "Request not found" });
                 }
 
-                if (request.Status != "pending")
+                if (request.Status != RequestStatus.Pending)
                 {
                     return BadRequest(new { message = "Only pending requests can be rejected" });
                 }
@@ -178,7 +178,7 @@ namespace PropertyBooking.Controllers
                     return NotFound(new { message = "Request not found" });
                 }
 
-                if (request.Status != "pending")
+                if (request.Status != RequestStatus.Pending)
                 {
                     return BadRequest(new { message = "Only pending requests can be cancelled" });
                 }
@@ -206,6 +206,15 @@ namespace PropertyBooking.Controllers
         public string AdditionalNotes { get; set; }
     }
 
+    // Enums
+    public enum RequestStatus
+    {
+        Pending = 1,
+        Approved = 2,
+        Rejected = 3,
+        Cancelled = 4
+    }
+
     // Models
     public class BookingRequest
     {
@@ -219,7 +228,7 @@ namespace PropertyBooking.Controllers
         public string ExpectedArrivalTime { get; set; }
         public int NumberOfGuests { get; set; }
         public string AdditionalNotes { get; set; }
-        public string Status { get; set; } // pending, approved, rejected, cancelled
+        public RequestStatus Status { get; set; }
         public DateTime CreatedDate { get; set; }
     }
 

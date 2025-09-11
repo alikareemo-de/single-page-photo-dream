@@ -1,6 +1,13 @@
 // Request management API
 const API_BASE_URL = '/api';
 
+export enum RequestStatus {
+  Pending = 1,
+  Approved = 2,
+  Rejected = 3,
+  Cancelled = 4
+}
+
 export interface BookingRequest {
   id: string;
   propertyId: string;
@@ -12,7 +19,7 @@ export interface BookingRequest {
   expectedArrivalTime?: string;
   numberOfGuests: number;
   additionalNotes?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  status: RequestStatus;
   createdDate: string;
 }
 
