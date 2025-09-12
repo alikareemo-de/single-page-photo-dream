@@ -118,6 +118,9 @@ const Navigation: React.FC = () => {
               <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
                 <Link to="/settings" className="cursor-pointer">Settings</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild className="hover:bg-tourism-light-blue/30">
+                <Link to="/admin" className="cursor-pointer">Admin Dashboard</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem className="text-tourism-coral cursor-pointer hover:bg-tourism-light-blue/30" onClick={signOut}>
                 Log out
               </DropdownMenuItem>
