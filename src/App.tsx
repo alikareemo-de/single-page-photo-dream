@@ -18,6 +18,7 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminRequests from "./pages/AdminRequests";
 import AdminProperties from "./pages/AdminProperties";
 import { UserProvider } from "./contexts/UserContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -37,10 +38,26 @@ const App = () => (
             <Route path="/properties" element={<Properties />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsers />} />
-            <Route path="/admin/requests" element={<AdminRequests />} />
-            <Route path="/admin/properties" element={<AdminProperties />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/requests" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminRequests />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/properties" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminProperties />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

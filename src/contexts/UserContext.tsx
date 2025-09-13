@@ -1,18 +1,20 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, signOutUser } from '../services/auth';
 
 interface User {
   id: string;
   username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   cellPhoneNumber?: string;
   dateOfBirth?: string;
   country?: string;
   city?: string;
   address?: string;
+  role?: string;
 }
 
 interface UserContextType {
@@ -32,6 +34,7 @@ const UserContext = createContext<UserContextType>({
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -47,6 +50,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = () => {
     signOutUser();
     setUser(null);
+    navigate('/');
   };
 
   return (
