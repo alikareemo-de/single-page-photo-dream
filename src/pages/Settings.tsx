@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
@@ -8,6 +7,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/hooks/useTheme';
+import OTPModal from '@/components/OTPModal';
 import { 
   Bell, 
   Globe, 
@@ -15,10 +18,98 @@ import {
   CreditCard, 
   Settings as SettingsIcon, 
   User,
-  Check
+  Check,
+  Palette,
+  Save
 } from 'lucide-react';
 
 const Settings = () => {
+  const { toast } = useToast();
+  const { theme, setTheme, availableThemes } = useTheme();
+  const [activeSection, setActiveSection] = useState('account');
+  const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
+  const [paymentFieldsEnabled, setPaymentFieldsEnabled] = useState(false);
+  
+  // Application settings state
+  const [appSettings, setAppSettings] = useState({
+    theme: theme,
+    notifications: true,
+    autoSave: true,
+    language: 'en',
+    emailUpdates: false,
+  });
+
+  // Payment form data
+  const [paymentData, setPaymentData] = useState({
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    cardholderName: '',
+    billingAddress: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: ''
+  });
+
+  const handleOTPSuccess = () => {
+    setPaymentFieldsEnabled(true);
+  };
+
+  const handlePaymentInputChange = (field: string, value: string) => {
+    setPaymentData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSavePaymentInfo = async () => {
+    try {
+      // Mock API call
+      toast({
+        title: "Payment method saved successfully",
+        description: "Your payment information has been securely stored.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save payment method. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleThemeChange = (newTheme: string) => {
+    const theme = newTheme as 'light' | 'dark' | 'blue';
+    setTheme(theme);
+    setAppSettings(prev => ({ ...prev, theme }));
+  };
+
+  const handleSaveAppSettings = async () => {
+    try {
+      // Mock API call for saving application settings
+      toast({
+        title: "Settings saved successfully",
+        description: "Your application settings have been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getThemeDisplayName = (theme: string) => {
+    switch (theme) {
+      case 'light': return 'Light';
+      case 'dark': return 'Dark';
+      case 'blue': return 'Blue';
+      default: return theme;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -38,127 +129,398 @@ const Settings = () => {
               </div>
               
               <div className="p-0">
-                <button className="flex items-center w-full p-3 bg-tourism-light-blue hover:bg-tourism-light-blue/70 text-left border-l-4 border-tourism-teal">
-                  <User className="mr-2 h-5 w-5 text-tourism-ocean" />
-                  <span className="font-medium text-tourism-ocean">Account</span>
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'account' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('account')}
+                >
+                  <User className={`mr-2 h-5 w-5 ${activeSection === 'account' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'account' ? 'font-medium text-tourism-ocean' : ''}>Account</span>
                 </button>
                 
-                <button className="flex items-center w-full p-3 hover:bg-tourism-light-blue/30 text-left border-l-4 border-transparent">
-                  <Bell className="mr-2 h-5 w-5 text-gray-600" />
-                  <span>Notifications</span>
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'payment' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('payment')}
+                >
+                  <CreditCard className={`mr-2 h-5 w-5 ${activeSection === 'payment' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'payment' ? 'font-medium text-tourism-ocean' : ''}>Payment Method</span>
                 </button>
                 
-                <button className="flex items-center w-full p-3 hover:bg-tourism-light-blue/30 text-left border-l-4 border-transparent">
-                  <Lock className="mr-2 h-5 w-5 text-gray-600" />
-                  <span>Privacy & Security</span>
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'application' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('application')}
+                >
+                  <Palette className={`mr-2 h-5 w-5 ${activeSection === 'application' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'application' ? 'font-medium text-tourism-ocean' : ''}>Application Settings</span>
+                </button>
+
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'notifications' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('notifications')}
+                >
+                  <Bell className={`mr-2 h-5 w-5 ${activeSection === 'notifications' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'notifications' ? 'font-medium text-tourism-ocean' : ''}>Notifications</span>
                 </button>
                 
-                <button className="flex items-center w-full p-3 hover:bg-tourism-light-blue/30 text-left border-l-4 border-transparent">
-                  <CreditCard className="mr-2 h-5 w-5 text-gray-600" />
-                  <span>Payment Methods</span>
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'privacy' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('privacy')}
+                >
+                  <Lock className={`mr-2 h-5 w-5 ${activeSection === 'privacy' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'privacy' ? 'font-medium text-tourism-ocean' : ''}>Privacy & Security</span>
                 </button>
                 
-                <button className="flex items-center w-full p-3 hover:bg-tourism-light-blue/30 text-left border-l-4 border-transparent">
-                  <Globe className="mr-2 h-5 w-5 text-gray-600" />
-                  <span>Language & Region</span>
+                <button 
+                  className={`flex items-center w-full p-3 text-left border-l-4 ${
+                    activeSection === 'language' 
+                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
+                      : 'hover:bg-tourism-light-blue/30 border-transparent'
+                  }`}
+                  onClick={() => setActiveSection('language')}
+                >
+                  <Globe className={`mr-2 h-5 w-5 ${activeSection === 'language' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
+                  <span className={activeSection === 'language' ? 'font-medium text-tourism-ocean' : ''}>Language & Region</span>
                 </button>
               </div>
             </Card>
           </div>
           
           <div className="md:col-span-2">
-            <Card className="tourism-card p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-tourism-ocean">Account Settings</h2>
-                <Button className="tourism-btn">Save Changes</Button>
-              </div>
-              
-              <Separator className="mb-6" />
-              
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-medium text-lg mb-4">Profile Information</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email" className="text-sm mb-1.5 block">Email Address</Label>
-                      <Input id="email" placeholder="john@example.com" defaultValue="john.smith@example.com" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="username" className="text-sm mb-1.5 block">Username</Label>
-                      <Input id="username" defaultValue="john_smith" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                    </div>
-                  </div>
+            {/* Account Settings Section */}
+            {activeSection === 'account' && (
+              <Card className="tourism-card p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-tourism-ocean">Account Settings</h2>
+                  <Button className="tourism-btn">Save Changes</Button>
                 </div>
                 
-                <Separator />
+                <Separator className="mb-6" />
                 
-                <div>
-                  <h3 className="font-medium text-lg mb-4">Change Password</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="current-password" className="text-sm mb-1.5 block">Current Password</Label>
-                      <Input id="current-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                    </div>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">Profile Information</h3>
                     
-                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="new-password" className="text-sm mb-1.5 block">New Password</Label>
-                        <Input id="new-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
+                        <Label htmlFor="email" className="text-sm mb-1.5 block">Email Address</Label>
+                        <Input id="email" placeholder="john@example.com" defaultValue="john.smith@example.com" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
                       </div>
                       
                       <div>
-                        <Label htmlFor="confirm-password" className="text-sm mb-1.5 block">Confirm New Password</Label>
-                        <Input id="confirm-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
+                        <Label htmlFor="username" className="text-sm mb-1.5 block">Username</Label>
+                        <Input id="username" defaultValue="john_smith" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <h3 className="font-medium text-lg mb-4">Preferences</h3>
                   
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Email Notifications</p>
-                        <p className="text-sm text-gray-500">Receive emails about your account activity and bookings</p>
-                      </div>
-                      <Switch id="email-notifications" defaultChecked />
-                    </div>
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">Change Password</h3>
                     
-                    <div className="flex items-center justify-between">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="font-medium">Marketing Communications</p>
-                        <p className="text-sm text-gray-500">Receive promotional emails, newsletters, and special offers</p>
+                        <Label htmlFor="current-password" className="text-sm mb-1.5 block">Current Password</Label>
+                        <Input id="current-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
                       </div>
-                      <Switch id="marketing-emails" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">SMS Notifications</p>
-                        <p className="text-sm text-gray-500">Receive text messages for booking confirmations and updates</p>
+                      
+                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="new-password" className="text-sm mb-1.5 block">New Password</Label>
+                          <Input id="new-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="confirm-password" className="text-sm mb-1.5 block">Confirm New Password</Label>
+                          <Input id="confirm-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
+                        </div>
                       </div>
-                      <Switch id="sms-notifications" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Dark Mode</p>
-                        <p className="text-sm text-gray-500">Switch between light and dark theme</p>
-                      </div>
-                      <Switch id="dark-mode" />
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
+
+            {/* Payment Method Section */}
+            {activeSection === 'payment' && (
+              <Card className="tourism-card p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-tourism-ocean">Payment Method</h2>
+                  {!paymentFieldsEnabled && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 border-tourism-teal text-tourism-teal hover:bg-tourism-light-blue/50"
+                      onClick={() => setIsOTPModalOpen(true)}
+                    >
+                      <Lock className="h-4 w-4" />
+                      Add Payment Method
+                    </Button>
+                  )}
+                  {paymentFieldsEnabled && (
+                    <Button onClick={handleSavePaymentInfo} className="tourism-btn">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Payment Info
+                    </Button>
+                  )}
+                </div>
+                
+                <Separator className="my-4" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">Card Number</Label>
+                    <Input
+                      value={paymentData.cardNumber}
+                      onChange={(e) => handlePaymentInputChange('cardNumber', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="1234 5678 9012 3456"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">Cardholder Name</Label>
+                    <Input
+                      value={paymentData.cardholderName}
+                      onChange={(e) => handlePaymentInputChange('cardholderName', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="John Smith"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">Expiry Date</Label>
+                    <Input
+                      value={paymentData.expiryDate}
+                      onChange={(e) => handlePaymentInputChange('expiryDate', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="MM/YY"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">CVV</Label>
+                    <Input
+                      value={paymentData.cvv}
+                      onChange={(e) => handlePaymentInputChange('cvv', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="123"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">Billing Address</Label>
+                    <Input
+                      value={paymentData.billingAddress}
+                      onChange={(e) => handlePaymentInputChange('billingAddress', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="123 Main Street"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">City</Label>
+                    <Input
+                      value={paymentData.city}
+                      onChange={(e) => handlePaymentInputChange('city', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="New York"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">State/Province</Label>
+                    <Input
+                      value={paymentData.state}
+                      onChange={(e) => handlePaymentInputChange('state', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="NY"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">ZIP Code</Label>
+                    <Input
+                      value={paymentData.zipCode}
+                      onChange={(e) => handlePaymentInputChange('zipCode', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="10001"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium block mb-1 text-gray-700">Country</Label>
+                    <Input
+                      value={paymentData.country}
+                      onChange={(e) => handlePaymentInputChange('country', e.target.value)}
+                      disabled={!paymentFieldsEnabled}
+                      placeholder="United States"
+                      className={!paymentFieldsEnabled ? "bg-gray-100" : ""}
+                    />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Application Settings Section */}
+            {activeSection === 'application' && (
+              <Card className="tourism-card p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-tourism-ocean">Application Settings</h2>
+                  <Button onClick={handleSaveAppSettings} className="tourism-btn">
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Settings
+                  </Button>
+                </div>
+                
+                <Separator className="mb-6" />
+                
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">Theme & Appearance</h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium block mb-2">Select Theme</Label>
+                        <Select value={theme} onValueChange={handleThemeChange}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select theme" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableThemes.map((themeOption) => (
+                              <SelectItem key={themeOption} value={themeOption}>
+                                {getThemeDisplayName(themeOption)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Current theme: {getThemeDisplayName(theme)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">General Preferences</h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Auto-save</p>
+                          <p className="text-sm text-gray-500">Automatically save your changes</p>
+                        </div>
+                        <Switch 
+                          checked={appSettings.autoSave}
+                          onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, autoSave: checked }))}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Email Updates</p>
+                          <p className="text-sm text-gray-500">Receive updates about new features</p>
+                        </div>
+                        <Switch 
+                          checked={appSettings.emailUpdates}
+                          onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, emailUpdates: checked }))}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-sm font-medium block mb-2">Language</Label>
+                        <Select 
+                          value={appSettings.language} 
+                          onValueChange={(value) => setAppSettings(prev => ({ ...prev, language: value }))}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Spanish</SelectItem>
+                            <SelectItem value="fr">French</SelectItem>
+                            <SelectItem value="de">German</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Other sections... */}
+            {activeSection === 'notifications' && (
+              <Card className="tourism-card p-6">
+                <h2 className="text-xl font-semibold text-tourism-ocean mb-6">Notification Preferences</h2>
+                <Separator className="mb-6" />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Email Notifications</p>
+                      <p className="text-sm text-gray-500">Receive emails about your account activity and bookings</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Marketing Communications</p>
+                      <p className="text-sm text-gray-500">Receive promotional emails, newsletters, and special offers</p>
+                    </div>
+                    <Switch />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">SMS Notifications</p>
+                      <p className="text-sm text-gray-500">Receive text messages for booking confirmations and updates</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {(activeSection === 'privacy' || activeSection === 'language') && (
+              <Card className="tourism-card p-6">
+                <h2 className="text-xl font-semibold text-tourism-ocean mb-6">
+                  {activeSection === 'privacy' ? 'Privacy & Security' : 'Language & Region'}
+                </h2>
+                <Separator className="mb-6" />
+                <p className="text-gray-600">
+                  {activeSection === 'privacy' 
+                    ? 'Privacy and security settings will be available here.'
+                    : 'Language and region settings will be available here.'
+                  }
+                </p>
+              </Card>
+            )}
             
+            {/* Account Verification Status */}
             <Card className="tourism-card p-6 mt-6">
               <div className="flex justify-between items-start">
                 <div>
@@ -179,6 +541,13 @@ const Settings = () => {
           </div>
         </div>
       </main>
+      
+      <OTPModal
+        isOpen={isOTPModalOpen}
+        onClose={() => setIsOTPModalOpen(false)}
+        onSuccess={handleOTPSuccess}
+      />
+      
       <Footer />
     </div>
   );

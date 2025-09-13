@@ -19,16 +19,18 @@ import AdminRequests from "./pages/AdminRequests";
 import AdminProperties from "./pages/AdminProperties";
 import { UserProvider } from "./contexts/UserContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ThemeProvider } from "./hooks/useTheme";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <UserProvider>
+    <ThemeProvider defaultTheme="light" storageKey="app-theme">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <UserProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/property/:id" element={<PropertyDetails />} />
@@ -61,9 +63,10 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </UserProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+          </UserProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
