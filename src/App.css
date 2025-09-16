@@ -1,8 +1,33 @@
+/* Theme-specific styles */
+:root {
+  --app-background: hsl(var(--background));
+  --app-foreground: hsl(var(--foreground));
+}
+
+.dark {
+  --app-background: hsl(210, 11%, 11%);
+  --app-foreground: hsl(213, 31%, 91%);
+}
+
+.blue {
+  --app-background: hsl(210, 50%, 5%);
+  --app-foreground: hsl(210, 40%, 90%);
+  --primary: 210 100% 60%;
+  --primary-foreground: 210 20% 95%;
+  --secondary: 210 30% 20%;
+  --muted: 210 30% 15%;
+  --accent: 210 80% 50%;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: var(--app-background);
+  color: var(--app-foreground);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .logo {

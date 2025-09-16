@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,15 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
+import { useUser } from '@/contexts/UserContext';
 import OTPModal from '@/components/OTPModal';
+import { 
+  changePassword, 
+  getPaymentInfoByUserId, 
+  updatePayment, 
+  getSettings, 
+  updateSettings 
+} from '@/services/settingsApi';
 import { 
   Bell, 
   Globe, 
@@ -26,9 +34,18 @@ import {
 const Settings = () => {
   const { toast } = useToast();
   const { theme, setTheme, availableThemes } = useTheme();
+  const { user } = useUser();
   const [activeSection, setActiveSection] = useState('account');
   const [isOTPModalOpen, setIsOTPModalOpen] = useState(false);
   const [paymentFieldsEnabled, setPaymentFieldsEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
   
   // Application settings state
   const [appSettings, setAppSettings] = useState({
@@ -52,6 +69,44 @@ const Settings = () => {
     country: ''
   });
 
+  // Load settings on component mount
+  useEffect(() => {
+    if (user?.id) {
+      loadUserSettings();
+      loadPaymentInfo();
+    }
+  }, [user]);
+
+  const loadUserSettings = async () => {
+    try {
+      const settings = await getSettings();
+      setAppSettings(prev => ({
+        ...prev,
+        ...settings,
+        theme: settings.theme || theme
+      }));
+      if (settings.theme && settings.theme !== theme) {
+        setTheme(settings.theme);
+      }
+    } catch (error) {
+      console.error('Failed to load settings:', error);
+    }
+  };
+
+  const loadPaymentInfo = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const paymentInfo = await getPaymentInfoByUserId(user.id);
+      if (paymentInfo) {
+        setPaymentData(paymentInfo);
+        setPaymentFieldsEnabled(true);
+      }
+    } catch (error) {
+      console.error('Failed to load payment info:', error);
+    }
+  };
+
   const handleOTPSuccess = () => {
     setPaymentFieldsEnabled(true);
   };
@@ -63,19 +118,62 @@ const Settings = () => {
     }));
   };
 
-  const handleSavePaymentInfo = async () => {
+  const handleChangePassword = async () => {
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all password fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Mock API call
+      await changePassword(passwordData.currentPassword, passwordData.newPassword);
+      toast({
+        title: "Password changed successfully",
+        description: "Your password has been updated.",
+      });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePaymentInfo = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      await updatePayment(user.id, paymentData);
       toast({
         title: "Payment method saved successfully",
         description: "Your payment information has been securely stored.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to save payment method. Please try again.",
+        description: error.message || "Failed to save payment method. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,18 +184,21 @@ const Settings = () => {
   };
 
   const handleSaveAppSettings = async () => {
+    setLoading(true);
     try {
-      // Mock API call for saving application settings
+      await updateSettings(appSettings);
       toast({
         title: "Settings saved successfully",
         description: "Your application settings have been updated.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to save settings. Please try again.",
+        description: error.message || "Failed to save settings. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,10 +309,12 @@ const Settings = () => {
             {/* Account Settings Section */}
             {activeSection === 'account' && (
               <Card className="tourism-card p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-tourism-ocean">Account Settings</h2>
-                  <Button className="tourism-btn">Save Changes</Button>
-                </div>
+                 <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-xl font-semibold text-tourism-ocean">Account Settings</h2>
+                   <Button onClick={handleChangePassword} disabled={loading} className="tourism-btn">
+                     {loading ? 'Saving...' : 'Change Password'}
+                   </Button>
+                 </div>
                 
                 <Separator className="mb-6" />
                 
@@ -237,24 +340,42 @@ const Settings = () => {
                   <div>
                     <h3 className="font-medium text-lg mb-4">Change Password</h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="current-password" className="text-sm mb-1.5 block">Current Password</Label>
-                        <Input id="current-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                      </div>
-                      
-                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="new-password" className="text-sm mb-1.5 block">New Password</Label>
-                          <Input id="new-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                        </div>
-                        
-                        <div>
-                          <Label htmlFor="confirm-password" className="text-sm mb-1.5 block">Confirm New Password</Label>
-                          <Input id="confirm-password" type="password" className="border-tourism-light-blue focus-visible:ring-tourism-teal" />
-                        </div>
-                      </div>
-                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div>
+                         <Label htmlFor="current-password" className="text-sm mb-1.5 block">Current Password</Label>
+                         <Input 
+                           id="current-password" 
+                           type="password" 
+                           value={passwordData.currentPassword}
+                           onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                           className="border-tourism-light-blue focus-visible:ring-tourism-teal" 
+                         />
+                       </div>
+                       
+                       <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                           <Label htmlFor="new-password" className="text-sm mb-1.5 block">New Password</Label>
+                           <Input 
+                             id="new-password" 
+                             type="password" 
+                             value={passwordData.newPassword}
+                             onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                             className="border-tourism-light-blue focus-visible:ring-tourism-teal" 
+                           />
+                         </div>
+                         
+                         <div>
+                           <Label htmlFor="confirm-password" className="text-sm mb-1.5 block">Confirm New Password</Label>
+                           <Input 
+                             id="confirm-password" 
+                             type="password" 
+                             value={passwordData.confirmPassword}
+                             onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                             className="border-tourism-light-blue focus-visible:ring-tourism-teal" 
+                           />
+                         </div>
+                       </div>
+                     </div>
                   </div>
                 </div>
               </Card>
@@ -276,12 +397,12 @@ const Settings = () => {
                       Add Payment Method
                     </Button>
                   )}
-                  {paymentFieldsEnabled && (
-                    <Button onClick={handleSavePaymentInfo} className="tourism-btn">
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Payment Info
-                    </Button>
-                  )}
+                   {paymentFieldsEnabled && (
+                     <Button onClick={handleSavePaymentInfo} disabled={loading} className="tourism-btn">
+                       <Save className="h-4 w-4 mr-2" />
+                       {loading ? 'Saving...' : 'Save Payment Info'}
+                     </Button>
+                   )}
                 </div>
                 
                 <Separator className="my-4" />
@@ -384,13 +505,13 @@ const Settings = () => {
             {/* Application Settings Section */}
             {activeSection === 'application' && (
               <Card className="tourism-card p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-tourism-ocean">Application Settings</h2>
-                  <Button onClick={handleSaveAppSettings} className="tourism-btn">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Settings
-                  </Button>
-                </div>
+                 <div className="flex justify-between items-center mb-6">
+                   <h2 className="text-xl font-semibold text-tourism-ocean">Application Settings</h2>
+                   <Button onClick={handleSaveAppSettings} disabled={loading} className="tourism-btn">
+                     <Save className="h-4 w-4 mr-2" />
+                     {loading ? 'Saving...' : 'Save Settings'}
+                   </Button>
+                 </div>
                 
                 <Separator className="mb-6" />
                 
