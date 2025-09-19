@@ -49,11 +49,9 @@ const Settings = () => {
   
   // Application settings state
   const [appSettings, setAppSettings] = useState({
-    theme: theme,
-    notifications: true,
-    autoSave: true,
-    language: 'en',
-    emailUpdates: false,
+    theme: 1, // enum: 1=Light, 2=Dark, 3=Blue
+    emailNotifications: true,
+    smsNotifications: false,
   });
 
   // Payment form data
@@ -83,10 +81,20 @@ const Settings = () => {
       setAppSettings(prev => ({
         ...prev,
         ...settings,
-        theme: settings.theme || theme
+        theme: settings.theme || getThemeEnumValue(theme)
       }));
-      if (settings.theme && settings.theme !== theme) {
-        setTheme(settings.theme);
+      if (settings.theme) {
+        // Convert enum value to theme name
+        let themeName: 'light' | 'dark' | 'blue';
+        switch (settings.theme) {
+          case 1: themeName = 'light'; break;
+          case 2: themeName = 'dark'; break;
+          case 3: themeName = 'blue'; break;
+          default: themeName = 'light';
+        }
+        if (themeName !== theme) {
+          setTheme(themeName);
+        }
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -177,10 +185,26 @@ const Settings = () => {
     }
   };
 
-  const handleThemeChange = (newTheme: string) => {
-    const theme = newTheme as 'light' | 'dark' | 'blue';
-    setTheme(theme);
-    setAppSettings(prev => ({ ...prev, theme }));
+  const handleThemeChange = (value: string) => {
+    // Convert enum value to theme name
+    let themeName: 'light' | 'dark' | 'blue';
+    switch (value) {
+      case '1': themeName = 'light'; break;
+      case '2': themeName = 'dark'; break;
+      case '3': themeName = 'blue'; break;
+      default: themeName = 'light';
+    }
+    setTheme(themeName);
+    setAppSettings(prev => ({ ...prev, theme: parseInt(value) }));
+  };
+
+  const getThemeEnumValue = (themeName: string): number => {
+    switch (themeName) {
+      case 'light': return 1;
+      case 'dark': return 2;
+      case 'blue': return 3;
+      default: return 1;
+    }
   };
 
   const handleSaveAppSettings = async () => {
@@ -266,41 +290,6 @@ const Settings = () => {
                   <span className={activeSection === 'application' ? 'font-medium text-tourism-ocean' : ''}>Application Settings</span>
                 </button>
 
-                <button 
-                  className={`flex items-center w-full p-3 text-left border-l-4 ${
-                    activeSection === 'notifications' 
-                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
-                      : 'hover:bg-tourism-light-blue/30 border-transparent'
-                  }`}
-                  onClick={() => setActiveSection('notifications')}
-                >
-                  <Bell className={`mr-2 h-5 w-5 ${activeSection === 'notifications' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
-                  <span className={activeSection === 'notifications' ? 'font-medium text-tourism-ocean' : ''}>Notifications</span>
-                </button>
-                
-                <button 
-                  className={`flex items-center w-full p-3 text-left border-l-4 ${
-                    activeSection === 'privacy' 
-                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
-                      : 'hover:bg-tourism-light-blue/30 border-transparent'
-                  }`}
-                  onClick={() => setActiveSection('privacy')}
-                >
-                  <Lock className={`mr-2 h-5 w-5 ${activeSection === 'privacy' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
-                  <span className={activeSection === 'privacy' ? 'font-medium text-tourism-ocean' : ''}>Privacy & Security</span>
-                </button>
-                
-                <button 
-                  className={`flex items-center w-full p-3 text-left border-l-4 ${
-                    activeSection === 'language' 
-                      ? 'bg-tourism-light-blue hover:bg-tourism-light-blue/70 border-tourism-teal' 
-                      : 'hover:bg-tourism-light-blue/30 border-transparent'
-                  }`}
-                  onClick={() => setActiveSection('language')}
-                >
-                  <Globe className={`mr-2 h-5 w-5 ${activeSection === 'language' ? 'text-tourism-ocean' : 'text-gray-600'}`} />
-                  <span className={activeSection === 'language' ? 'font-medium text-tourism-ocean' : ''}>Language & Region</span>
-                </button>
               </div>
             </Card>
           </div>
@@ -517,74 +506,55 @@ const Settings = () => {
                 
                 <div className="space-y-6">
                   <div>
-                    <h3 className="font-medium text-lg mb-4">Theme & Appearance</h3>
-                    
-                    <div className="space-y-4">
+                    <h3 className="font-medium text-lg mb-4">Email Notifications</h3>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-sm font-medium block mb-2">Select Theme</Label>
-                        <Select value={theme} onValueChange={handleThemeChange}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select theme" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableThemes.map((themeOption) => (
-                              <SelectItem key={themeOption} value={themeOption}>
-                                {getThemeDisplayName(themeOption)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Current theme: {getThemeDisplayName(theme)}
-                        </p>
+                        <p className="font-medium">Email Notifications</p>
+                        <p className="text-sm text-gray-500">Receive notifications via email</p>
                       </div>
+                      <Switch 
+                        checked={appSettings.emailNotifications}
+                        onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, emailNotifications: checked }))}
+                      />
                     </div>
                   </div>
                   
                   <Separator />
                   
                   <div>
-                    <h3 className="font-medium text-lg mb-4">General Preferences</h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Auto-save</p>
-                          <p className="text-sm text-gray-500">Automatically save your changes</p>
-                        </div>
-                        <Switch 
-                          checked={appSettings.autoSave}
-                          onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, autoSave: checked }))}
-                        />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Email Updates</p>
-                          <p className="text-sm text-gray-500">Receive updates about new features</p>
-                        </div>
-                        <Switch 
-                          checked={appSettings.emailUpdates}
-                          onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, emailUpdates: checked }))}
-                        />
-                      </div>
-                      
+                    <h3 className="font-medium text-lg mb-4">SMS Notifications</h3>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <Label className="text-sm font-medium block mb-2">Language</Label>
-                        <Select 
-                          value={appSettings.language} 
-                          onValueChange={(value) => setAppSettings(prev => ({ ...prev, language: value }))}
-                        >
+                        <p className="font-medium">SMS Notifications</p>
+                        <p className="text-sm text-gray-500">Receive notifications via SMS</p>
+                      </div>
+                      <Switch 
+                        checked={appSettings.smsNotifications}
+                        onCheckedChange={(checked) => setAppSettings(prev => ({ ...prev, smsNotifications: checked }))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-medium text-lg mb-4">Theme & Appearance</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium block mb-2">Select Theme</Label>
+                        <Select value={appSettings.theme.toString()} onValueChange={handleThemeChange}>
                           <SelectTrigger className="w-full">
-                            <SelectValue />
+                            <SelectValue placeholder="Select theme" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="en">English</SelectItem>
-                            <SelectItem value="es">Spanish</SelectItem>
-                            <SelectItem value="fr">French</SelectItem>
-                            <SelectItem value="de">German</SelectItem>
+                            <SelectItem value="1">Light</SelectItem>
+                            <SelectItem value="2">Dark</SelectItem>
+                            <SelectItem value="3">Blue</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Current theme: {appSettings.theme === 1 ? 'Light' : appSettings.theme === 2 ? 'Dark' : 'Blue'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -592,54 +562,6 @@ const Settings = () => {
               </Card>
             )}
 
-            {/* Other sections... */}
-            {activeSection === 'notifications' && (
-              <Card className="tourism-card p-6">
-                <h2 className="text-xl font-semibold text-tourism-ocean mb-6">Notification Preferences</h2>
-                <Separator className="mb-6" />
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Email Notifications</p>
-                      <p className="text-sm text-gray-500">Receive emails about your account activity and bookings</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Marketing Communications</p>
-                      <p className="text-sm text-gray-500">Receive promotional emails, newsletters, and special offers</p>
-                    </div>
-                    <Switch />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">SMS Notifications</p>
-                      <p className="text-sm text-gray-500">Receive text messages for booking confirmations and updates</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {(activeSection === 'privacy' || activeSection === 'language') && (
-              <Card className="tourism-card p-6">
-                <h2 className="text-xl font-semibold text-tourism-ocean mb-6">
-                  {activeSection === 'privacy' ? 'Privacy & Security' : 'Language & Region'}
-                </h2>
-                <Separator className="mb-6" />
-                <p className="text-gray-600">
-                  {activeSection === 'privacy' 
-                    ? 'Privacy and security settings will be available here.'
-                    : 'Language and region settings will be available here.'
-                  }
-                </p>
-              </Card>
-            )}
             
             {/* Account Verification Status */}
             <Card className="tourism-card p-6 mt-6">
